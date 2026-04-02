@@ -1,0 +1,22 @@
+# Binaries/Build
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.pdb
+*.ilk
+
+# VS Code / IDE
+.vscode/
+
+# Project structure
+build/
+bin/
+out/
+
+# Raylib specific (if you don't want the library binaries in Git)
+# raylib/*.a
+# raylib/*.lib
+# raylib/*.dll
