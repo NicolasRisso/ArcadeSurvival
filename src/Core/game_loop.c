@@ -63,7 +63,8 @@ void UpdateLogic(float deltaTime)
     PlayerCharacter_Update(&hero, deltaTime);
 
     // ACT 4: Update Swarm behaviors
-    EnemySystem_Update(deltaTime);
+    Vector2 playerPos = hero.base.position;
+    EnemySystem_Update(deltaTime, playerPos);
 }
 
 void RenderGraphics(void)
