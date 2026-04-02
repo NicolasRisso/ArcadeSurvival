@@ -7,7 +7,7 @@ if not exist %OUT_DIR% mkdir %OUT_DIR%
 
 :: Collect all .c files in the current folder (main.c) and the src directory recursively
 setlocal EnableDelayedExpansion
-set "SOURCE_FILES=main.c"
+set "SOURCE_FILES="
 for /R src %%f in (*.c) do (
     set "SOURCE_FILES=!SOURCE_FILES! "%%f""
 )

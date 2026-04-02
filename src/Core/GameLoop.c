@@ -1,4 +1,11 @@
 #include "Core/GameLoop.h"
+#include "Framework_OOS/Actor.h"
+#include "Graphics/SpriteComponent.h"
+
+// --- Global variables for Act 2 test ---
+Actor testActor;
+SpriteComponent testSprite;
+// ---------------------------------------
 
 void InitGame(void)
 {
@@ -21,7 +28,16 @@ void InitGame(void)
     // Initialize Audio device
     InitAudioDevice();
     
-    // TODO: Init other subsystems, allocate memory pools, load resources here
+    // ACT 2: Initialize Test Actor
+    Vector2 spawnPoint = { screenWidth / 2.0f, screenHeight / 2.0f };
+    Actor_Init(&testActor, 1, spawnPoint);
+    
+    // Initialize its Sprite Component
+    SpriteComponent_Init(&testSprite, &testActor, RED, 50.0f, 50.0f);
+    
+    // Attach Component to Actor
+    // Important: We cast SpriteComponent to Component (this is how C inheritance works)
+    Actor_AddComponent(&testActor, (Component*)&testSprite);
 }
 
 void ProcessInput(void)
@@ -33,7 +49,11 @@ void ProcessInput(void)
 
 void UpdateLogic(float deltaTime)
 {
-    // TODO: Run OOS (Player) updates and ECS (Swarm) updates
+    // Make the test actor spin slowly to test Component Updates implicitly
+    testActor.rotation += 45.0f * deltaTime;
+    
+    // Update the actor and its components
+    Actor_Update(&testActor, deltaTime);
 }
 
 void RenderGraphics(void)
@@ -43,15 +63,15 @@ void RenderGraphics(void)
     ClearBackground(RAYWHITE);
 
     // Dummy text to ensure the loop is running correctly
-    DrawText("Act 1: Separated Game Loop is Running!", 100, 100, 40, DARKGREEN);
+    DrawText("Act 2: OOS Framework is Running! (Spinning square is an Actor)", 100, 100, 40, DARKGREEN);
     DrawText("Press ESC to exit.", 100, 150, 20, DARKGRAY);
 
-    // TODO: Render OOS elements (Player) 
-    // TODO: Render ECS elements (Swarm)
-    // TODO: Render UI
+    // ACT 2: Render the OOS Actor (which invokes its SpriteComponent render)
+    Actor_Render(&testActor);
     
     EndDrawing();
 }
+
 
 void CloseGame(void)
 {
