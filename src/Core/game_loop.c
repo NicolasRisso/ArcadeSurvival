@@ -6,6 +6,10 @@
 #include "game/core/player_character.h"
 #include <stdio.h>
 
+#include "framework_ecs/ecs_core.h"
+#include "game/swarm/swarm_renderer_system.h"
+#include "game/swarm/enemy_system.h"
+
 // --- Global variables for Act 3 ---
 static PlayerController playerController;
 static PlayerState playerState;
@@ -41,6 +45,10 @@ void InitGame(void)
     
     // Note: The PlayerCharacter aggregates the controller and state 
     PlayerCharacter_Init(&hero, 1, spawnPoint, &playerController, &playerState);
+
+    // ACT 4: Initialize ECS and spawn initial swarm tests
+    ECS_Init();
+    EnemySystem_Init(spawnPoint);
 }
 
 void ProcessInput(void)
@@ -53,6 +61,9 @@ void UpdateLogic(float deltaTime)
 {
     // ACT 3: Update the Hero Character
     PlayerCharacter_Update(&hero, deltaTime);
+
+    // ACT 4: Update Swarm behaviors
+    EnemySystem_Update(deltaTime);
 }
 
 void RenderGraphics(void)
@@ -73,6 +84,9 @@ void RenderGraphics(void)
 
     // ACT 3: Render the Hero (Renders base Actor -> SpriteComponent)
     Actor_Render(&hero.base);
+    
+    // ACT 4: Render Swarm using the direct data array loop
+    SwarmRendererSystem_Draw();
     
     EndDrawing();
 }
