@@ -1,15 +1,21 @@
 @echo off
 set PROJECT_NAME=ArcadeSurvival
-set SOURCE_FILES=main.c
 set OUT_DIR=bin
 set COMPILER=gcc
 
 if not exist %OUT_DIR% mkdir %OUT_DIR%
 
+:: Collect all .c files in the current folder (main.c) and the src directory recursively
+setlocal EnableDelayedExpansion
+set "SOURCE_FILES=main.c"
+for /R src %%f in (*.c) do (
+    set "SOURCE_FILES=!SOURCE_FILES! "%%f""
+)
+
 echo Building %PROJECT_NAME%...
 
-%COMPILER% %SOURCE_FILES% -o %OUT_DIR%/%PROJECT_NAME%.exe ^
-    -Iraylib/include ^
+%COMPILER% !SOURCE_FILES! -o %OUT_DIR%/%PROJECT_NAME%.exe ^
+    -Iraylib/include -Isrc ^
     -Lraylib/lib ^
     -lraylib ^
     -lgdi32 ^

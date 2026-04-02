@@ -1,26 +1,25 @@
-#include "raylib.h"
+#include "Core/GameLoop.h"
 
 int main(void)
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    // Step 1: Initialize the game state and subsystems
+    InitGame();
 
-    InitWindow(screenWidth, screenHeight, "Arcade Survival - Get Started!");
-
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose())
+    // Step 2: The Main Loop
+    while (!IsGameReadyToClose())
     {
-        BeginDrawing();
+        // 2a. Gather Inputs
+        ProcessInput();
 
-        ClearBackground(RAYWHITE);
+        // 2b. Advance Logic (using time elapsed this frame)
+        UpdateLogic(GetFrameTime());
 
-        DrawText("Welcome to Arcade Survival!", 190, 200, 20, LIGHTGRAY);
-
-        EndDrawing();
+        // 2c. Render
+        RenderGraphics();
     }
 
-    CloseWindow();
+    // Step 3: Cleanup and exit
+    CloseGame();
 
     return 0;
 }
