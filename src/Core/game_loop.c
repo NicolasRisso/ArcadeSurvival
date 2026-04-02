@@ -10,10 +10,10 @@
 #include "game/swarm/swarm_renderer_system.h"
 #include "game/swarm/enemy_system.h"
 
-// --- Global variables for Act 3 ---
+// --- Global variables for Testing ---
 static PlayerController playerController;
 static PlayerState playerState;
-static PlayerCharacter hero;
+static PlayerCharacter playerCharacter;
 // ---------------------------------------
 
 void InitGame(void)
@@ -37,33 +37,33 @@ void InitGame(void)
     // Initialize Audio device
     InitAudioDevice();
     
-    // ACT 3: Initialize Player Architecture
+    // Initialize Player Architecture
     Vector2 spawnPoint = { screenWidth / 2.0f, screenHeight / 2.0f };
     
     PlayerController_Init(&playerController);
     PlayerState_Init(&playerState);
     
     // Note: The PlayerCharacter aggregates the controller and state 
-    PlayerCharacter_Init(&hero, 1, spawnPoint, &playerController, &playerState);
+    PlayerCharacter_Init(&playerCharacter, 1, spawnPoint, &playerController, &playerState);
 
-    // ACT 4: Initialize ECS and spawn initial swarm tests
+    // Initialize ECS and spawn initial swarm tests
     ECS_Init();
     EnemySystem_Init(spawnPoint);
 }
 
 void ProcessInput(void)
 {
-    // ACT 3: Capture Keyboard/Gamepad inputs into the Controller
+    // Capture Keyboard/Gamepad inputs into the Controller
     PlayerController_Update(&playerController);
 }
 
 void UpdateLogic(float deltaTime)
 {
-    // ACT 3: Update the Hero Character
-    PlayerCharacter_Update(&hero, deltaTime);
+    // Update the Hero Character
+    PlayerCharacter_Update(&playerCharacter, deltaTime);
 
-    // ACT 4: Update Swarm behaviors
-    Vector2 playerPos = hero.base.position;
+    // Update Swarm behaviors
+    Vector2 playerPos = playerCharacter.base.position;
     EnemySystem_Update(deltaTime, playerPos);
 }
 
@@ -74,7 +74,7 @@ void RenderGraphics(void)
     ClearBackground(RAYWHITE);
 
     // Dummy text to ensure the loop is running correctly
-    DrawText("Act 3: Player Architecture Running! (Use WASD to Move)", 100, 100, 40, DARKGREEN);
+    DrawText("ArcadeSurvivors", 100, 100, 40, DARKGREEN);
     DrawText("Press ESC to exit.", 100, 150, 20, DARKGRAY);
 
     // Render Stats for debugging
@@ -83,10 +83,10 @@ void RenderGraphics(void)
         playerState.health.currentHealth, playerState.health.maxHealth, playerState.level, playerState.experience);
     DrawText(statsText, 100, 200, 30, BLUE);
 
-    // ACT 3: Render the Hero (Renders base Actor -> SpriteComponent)
-    Actor_Render(&hero.base);
+    // Render the PlayerCharacter (Renders base Actor -> SpriteComponent)
+    Actor_Render(&playerCharacter.base);
     
-    // ACT 4: Render Swarm using the direct data array loop
+    // Render Swarm using the direct data array loop
     SwarmRendererSystem_Draw();
     
     EndDrawing();

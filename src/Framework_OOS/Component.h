@@ -6,7 +6,7 @@
 // Forward declaration of Actor so Component can reference its owner
 typedef struct Actor Actor;
 
-// Enum for identifying component types (useful for ECS bridges or RTTI)
+// Enum for identifying component types (useful for ECS bridges)
 typedef enum {
     COMP_BASE,
     COMP_SPRITE,

@@ -11,7 +11,7 @@ typedef struct Actor {
     int id;
     bool bIsActive;
     
-    // Core Transform data (We put it here directly for performance instead of a TransformComponent)
+    // Core Transform data (I've put it here directly for performance instead of a TransformComponent)
     Vector2 position;
     float rotation;
     float scale;
