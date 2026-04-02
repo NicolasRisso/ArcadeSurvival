@@ -2,7 +2,7 @@
 #define ACTOR_H
 
 #include "raylib.h"
-#include "Framework_OOS/Component.h"
+#include "framework_oos/component.h"
 #include <stdbool.h>
 
 #define MAX_COMPONENTS_PER_ACTOR 8

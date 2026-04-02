@@ -1,10 +1,15 @@
 #include "core/game_loop.h"
 #include "framework_oos/actor.h"
 #include "graphics/sprite_component.h"
+#include "game/core/player_controller.h"
+#include "game/core/player_state.h"
+#include "game/core/player_character.h"
+#include <stdio.h>
 
-// --- Global variables for Act 2 test ---
-Actor testActor;
-SpriteComponent testSprite;
+// --- Global variables for Act 3 ---
+static PlayerController playerController;
+static PlayerState playerState;
+static PlayerCharacter hero;
 // ---------------------------------------
 
 void InitGame(void)
@@ -28,30 +33,26 @@ void InitGame(void)
     // Initialize Audio device
     InitAudioDevice();
     
-    // ACT 2: Initialize Test Actor
+    // ACT 3: Initialize Player Architecture
     Vector2 spawnPoint = { screenWidth / 2.0f, screenHeight / 2.0f };
-    Actor_Init(&testActor, 1, spawnPoint);
     
-    // Initialize its Sprite Component
-    SpriteComponent_Init(&testSprite, &testActor, RED, 50.0f, 50.0f);
+    PlayerController_Init(&playerController);
+    PlayerState_Init(&playerState);
     
-    // Attach Component to Actor
-    // Important: We cast SpriteComponent to Component (this is how C inheritance works)
-    Actor_AddComponent(&testActor, (Component*)&testSprite);
+    // Note: The PlayerCharacter aggregates the controller and state 
+    PlayerCharacter_Init(&hero, 1, spawnPoint, &playerController, &playerState);
 }
 
 void ProcessInput(void)
 {
-    // As a placeholder, if we press ESC, raylib automatically flags the window to close
+    // ACT 3: Capture Keyboard/Gamepad inputs into the Controller
+    PlayerController_Update(&playerController);
 }
 
 void UpdateLogic(float deltaTime)
 {
-    // Make the test actor spin slowly to test Component Updates implicitly
-    testActor.rotation += 45.0f * deltaTime;
-    
-    // Update the actor and its components
-    Actor_Update(&testActor, deltaTime);
+    // ACT 3: Update the Hero Character
+    PlayerCharacter_Update(&hero, deltaTime);
 }
 
 void RenderGraphics(void)
@@ -61,11 +62,17 @@ void RenderGraphics(void)
     ClearBackground(RAYWHITE);
 
     // Dummy text to ensure the loop is running correctly
-    DrawText("Act 2: OOS Framework is Running! (Spinning square is an Actor)", 100, 100, 40, DARKGREEN);
+    DrawText("Act 3: Player Architecture Running! (Use WASD to Move)", 100, 100, 40, DARKGREEN);
     DrawText("Press ESC to exit.", 100, 150, 20, DARKGRAY);
 
-    // ACT 2: Render the OOS Actor (which invokes its SpriteComponent render)
-    Actor_Render(&testActor);
+    // Render Stats for debugging
+    char statsText[128];
+    sprintf(statsText, "HP: %d/%d  LVL: %d  EXP: %d", 
+        playerState.health.currentHealth, playerState.health.maxHealth, playerState.level, playerState.experience);
+    DrawText(statsText, 100, 200, 30, BLUE);
+
+    // ACT 3: Render the Hero (Renders base Actor -> SpriteComponent)
+    Actor_Render(&hero.base);
     
     EndDrawing();
 }

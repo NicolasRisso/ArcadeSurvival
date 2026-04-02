@@ -1,4 +1,4 @@
-#include "Framework_OOS/Component.h"
+#include "framework_oos/component.h"
 #include <stddef.h>
 
 void Component_Init(Component* comp, ComponentType type, Actor* owner)

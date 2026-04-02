@@ -1,4 +1,4 @@
-#include "Framework_OOS/Actor.h"
+#include "framework_oos/actor.h"
 #include <stddef.h>
 
 void Actor_Init(Actor* actor, int id, Vector2 spawnPos)

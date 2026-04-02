@@ -2,9 +2,10 @@
 #define PLAYER_CHARACTER_H
 
 #include "framework_oos/actor.h"
-#include "game/player_controller.h"
-#include "game/player_state.h"
+#include "game/core/player_controller.h"
+#include "game/core/player_state.h"
 #include "graphics/sprite_component.h"
+#include "game/player/movement/movement_component.h"
 
 // PlayerCharacter inherits from Actor by having it as the first member
 typedef struct {
@@ -12,13 +13,11 @@ typedef struct {
     
     // Components
     SpriteComponent spriteComp;
+    MovementComponent movementComp;
     
     // Systems
     PlayerController* controller;
     PlayerState* state;
-    
-    // Character Stats
-    float moveSpeed;
 } PlayerCharacter;
 
 void PlayerCharacter_Init(PlayerCharacter* character, int id, Vector2 spawnPos, PlayerController* controller, PlayerState* state);

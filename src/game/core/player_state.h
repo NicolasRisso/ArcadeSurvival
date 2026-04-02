@@ -1,15 +1,13 @@
 #ifndef PLAYER_STATE_H
 #define PLAYER_STATE_H
 
-#include <stdbool.h>
+#include "game/systems/health/health_component.h"
 
 typedef struct {
-    int maxHealth;
-    int currentHealth;
+    HealthComponent health;
     int score;
     int level;
     int experience;
-    bool bIsDead;
 } PlayerState;
 
 void PlayerState_Init(PlayerState* state);
