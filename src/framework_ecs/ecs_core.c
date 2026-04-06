@@ -18,6 +18,13 @@ float projectile_sizes[MAX_PROJECTILES];
 int projectile_damage[MAX_PROJECTILES];
 int projectile_penetrations[MAX_PROJECTILES];
 
+// --- PICKUP ECS ARRAYS ---
+bool pickup_bIsActive[MAX_PICKUPS];
+Vector2 pickup_positions[MAX_PICKUPS];
+PickupType pickup_types[MAX_PICKUPS];
+bool pickup_bIsMagnetized[MAX_PICKUPS];
+float pickup_magnetizeSpeeds[MAX_PICKUPS];
+
 void ECS_Init(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemy_bIsActive[i] = false;
@@ -26,6 +33,10 @@ void ECS_Init(void) {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         projectile_bIsActive[i] = false;
         projectile_sizes[i] = 5.0f;
+    }
+    for (int i = 0; i < MAX_PICKUPS; i++) {
+        pickup_bIsActive[i] = false;
+        pickup_bIsMagnetized[i] = false;
     }
 }
 
@@ -70,5 +81,25 @@ int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int dam
 void ECS_DestroyProjectile(int entityId) {
     if (entityId >= 0 && entityId < MAX_PROJECTILES) {
         projectile_bIsActive[entityId] = false;
+    }
+}
+
+int ECS_SpawnPickup(Vector2 pos, PickupType type) {
+    for (int i = 0; i < MAX_PICKUPS; i++) {
+        if (!pickup_bIsActive[i]) {
+            pickup_positions[i] = pos;
+            pickup_types[i] = type;
+            pickup_bIsMagnetized[i] = false;
+            pickup_magnetizeSpeeds[i] = 0.0f;
+            pickup_bIsActive[i] = true;
+            return i;
+        }
+    }
+    return -1;
+}
+
+void ECS_DestroyPickup(int entityId) {
+    if (entityId >= 0 && entityId < MAX_PICKUPS) {
+        pickup_bIsActive[entityId] = false;
     }
 }

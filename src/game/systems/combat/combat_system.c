@@ -3,6 +3,8 @@
 #include "raymath.h"
 #include <float.h>
 
+extern float g_DoubleTroubleTimer;
+
 void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos) {
     if (!state || state->health.bIsDead) return;
 
@@ -10,6 +12,9 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
         Weapon* w = &state->weapons.weapons[i];
         
         if (w->type == WEAPON_NONE) continue;
+        
+        float realFireRate = (g_DoubleTroubleTimer > 0.0f) ? w->fireRate * 0.5f : w->fireRate;
+        int realDamage = (g_DoubleTroubleTimer > 0.0f) ? w->damage * 2 : w->damage;
         
         w->cooldownTimer -= deltaTime;
         
@@ -42,11 +47,11 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                     vel, 
                     BLUE, 
                     6.0f, 
-                    w->damage, 
+                    realDamage, 
                     w->penetration
                 );
                 
-                w->cooldownTimer = w->fireRate; // Reset cooldown
+                w->cooldownTimer = realFireRate; // Reset cooldown
             }
         }
     }

@@ -116,6 +116,12 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos) {
         }
     }
 
+    // Checking global time freeze
+    extern float g_TimeFreezeTimer;
+    if (g_TimeFreezeTimer > 0.0f) {
+        return; // Enemies do not move or think
+    }
+
     // 2. Swarm AI (Keep same logic, just iterate active indices)
     float repulseRadius = 25.0f;
     float playerRadius = 35.0f;

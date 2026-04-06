@@ -3,12 +3,12 @@
 
 #include "game/systems/health/health_component.h"
 #include "game/systems/combat/weapon_component.h"
+#include "game/systems/level/xp_component.h"
 
 typedef struct {
     HealthComponent health;
     int score;
-    int level;
-    int experience;
+    XPComponent xp;
     
     WeaponComponent weapons;
 } PlayerState;

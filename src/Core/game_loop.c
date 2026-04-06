@@ -10,6 +10,8 @@
 #include "game/swarm/swarm_renderer_system.h"
 #include "game/swarm/enemy_system.h"
 #include "game/swarm/projectile_system.h"
+#include "game/swarm/pickup_system.h"
+#include "game/hud/hud_system.h"
 
 // --- Global variables for Testing ---
 static PlayerController playerController;
@@ -67,6 +69,7 @@ void UpdateLogic(float deltaTime)
     Vector2 playerPos = playerCharacter.base.position;
     EnemySystem_Update(deltaTime, playerPos);
     ProjectileSystem_Update(deltaTime);
+    PickupSystem_Update(deltaTime, &playerState, playerPos);
 }
 
 void RenderGraphics(void)
@@ -79,17 +82,14 @@ void RenderGraphics(void)
     DrawText("ArcadeSurvivors", 100, 100, 40, DARKGREEN);
     DrawText("Press ESC to exit.", 100, 150, 20, DARKGRAY);
 
-    // Render Stats for debugging
-    char statsText[128];
-    sprintf(statsText, "HP: %d/%d  LVL: %d  EXP: %d", 
-        playerState.health.currentHealth, playerState.health.maxHealth, playerState.level, playerState.experience);
-    DrawText(statsText, 100, 200, 30, BLUE);
-
     // Render the PlayerCharacter (Renders base Actor -> SpriteComponent)
     Actor_Render(&playerCharacter.base);
     
     // Render Swarm using the direct data array loop
     SwarmRendererSystem_Draw();
+    PickupSystem_Draw();
+    
+    HUDSystem_Draw(&playerState);
     
     EndDrawing();
 }

@@ -27,6 +27,19 @@ void ProjectileSystem_Update(float deltaTime) {
                 // Hit!
                 enemy_healths[j] -= projectile_damage[i];
                 if (enemy_healths[j] <= 0) {
+                    // Span pickup on death
+                    // 0.5% chance = value between 0 and 1000 <= 5
+                    int roll = GetRandomValue(0, 1000);
+                    PickupType typeToSpawn = PICKUP_XP_GEM;
+                    if (roll <= 5) {
+                        int pRoll = GetRandomValue(0, 3);
+                        if (pRoll == 0) typeToSpawn = PICKUP_NUKE;
+                        else if (pRoll == 1) typeToSpawn = PICKUP_TIME_FREEZE;
+                        else if (pRoll == 2) typeToSpawn = PICKUP_DOUBLE_TROUBLE;
+                        else typeToSpawn = PICKUP_MAGNET;
+                    }
+                    ECS_SpawnPickup(enemy_positions[j], typeToSpawn);
+                    
                     ECS_DestroyEnemy(j);
                 }
 
