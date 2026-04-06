@@ -26,6 +26,7 @@ void ProjectileSystem_Update(float deltaTime) {
             if (distSq < hitRadiusSq) {
                 // Hit!
                 enemy_healths[j] -= projectile_damage[i];
+                enemy_damageFlashes[j] = 0.1f;
                 if (enemy_healths[j] <= 0) {
                     // Span pickup on death
                     // 0.5% chance = value between 0 and 1000 <= 5

@@ -67,7 +67,7 @@ void UpdateLogic(float deltaTime)
 
     // Update Swarm behaviors
     Vector2 playerPos = playerCharacter.base.position;
-    EnemySystem_Update(deltaTime, playerPos);
+    EnemySystem_Update(deltaTime, playerPos, &playerState);
     ProjectileSystem_Update(deltaTime);
     PickupSystem_Update(deltaTime, &playerState, playerPos);
 }
@@ -75,19 +75,33 @@ void UpdateLogic(float deltaTime)
 void RenderGraphics(void)
 {
     BeginDrawing();
-    
     ClearBackground(RAYWHITE);
 
-    // Dummy text to ensure the loop is running correctly
-    DrawText("ArcadeSurvivors", 100, 100, 40, DARKGREEN);
-    DrawText("Press ESC to exit.", 100, 150, 20, DARKGRAY);
+    // Setup Camera2D
+    Camera2D camera = { 0 };
+    camera.target = playerCharacter.base.position;
+    camera.offset = (Vector2){ GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 
-    // Render the PlayerCharacter (Renders base Actor -> SpriteComponent)
+    BeginMode2D(camera);
+
+    // Draw Map Borders
+    DrawRectangleLines(-5000, -5000, 10000, 10000, DARKGRAY);
+
+    // Render Back Picking Items
+    PickupSystem_DrawBackground();
+
+    // Render the PlayerCharacter
     Actor_Render(&playerCharacter.base);
     
-    // Render Swarm using the direct data array loop
+    // Render Swarm 
     SwarmRendererSystem_Draw();
-    PickupSystem_Draw();
+    
+    // Render Fore Picking items (magnetized ones)
+    PickupSystem_DrawForeground();
+    
+    EndMode2D();
     
     HUDSystem_Draw(&playerState);
     

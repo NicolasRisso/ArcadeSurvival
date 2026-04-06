@@ -20,9 +20,27 @@ void PlayerState_Init(PlayerState* state) {
     WeaponComponent_AddWeapon(&state->weapons, basicArrow);
 }
 
-void PlayerState_TakeDamage(PlayerState* state, int amount) {
+void PlayerState_Update(PlayerState* state, float deltaTime) {
     if (!state) return;
-    HealthComponent_TakeDamage(&state->health, amount);
+
+    if (state->damageFlashTimer > 0.0f) {
+        state->damageFlashTimer -= deltaTime;
+    }
+
+    if (state->health.currentHealth <= 0) {
+        state->health.bIsDead = true;
+    }
+}
+
+void PlayerState_TakeDamage(PlayerState* state, int amount) {
+    if (!state || state->health.bIsDead) return;
+    
+    state->health.currentHealth -= amount;
+    state->damageFlashTimer = 0.1f;
+    
+    if (state->health.currentHealth < 0) {
+        state->health.currentHealth = 0;
+    }
 }
 
 void PlayerState_AddExperience(PlayerState* state, int amount) {

@@ -10,10 +10,13 @@ typedef struct {
     int score;
     XPComponent xp;
     
+    float damageFlashTimer;
+    
     WeaponComponent weapons;
 } PlayerState;
 
 void PlayerState_Init(PlayerState* state);
+void PlayerState_Update(PlayerState* state, float deltaTime);
 void PlayerState_TakeDamage(PlayerState* state, int amount);
 void PlayerState_AddExperience(PlayerState* state, int amount);
 

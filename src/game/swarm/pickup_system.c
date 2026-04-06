@@ -16,8 +16,7 @@ static void TriggerMagnet(void) {
 static void TriggerNuke(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
-            // Kill instantly without drops to avoid recursive nuke cascades, 
-            // or just destroy them. 
+            // Kill instantly 
             ECS_DestroyEnemy(i);
         }
     }
@@ -85,22 +84,42 @@ void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
     }
 }
 
-void PickupSystem_Draw(void) {
+void PickupSystem_DrawBackground(void) {
     for (int i = 0; i < MAX_PICKUPS; i++) {
-        if (!pickup_bIsActive[i]) continue;
+        if (pickup_bIsActive[i] && !pickup_bIsMagnetized[i]) {
+            Color col = WHITE;
+            float size = 8.0f;
 
-        Color col = WHITE;
-        float size = 8.0f;
+            switch (pickup_types[i]) {
+                case PICKUP_XP_GEM:         col = BLUE; size = 6.0f; break;
+                case PICKUP_NUKE:           col = RED; size = 12.0f; break;
+                case PICKUP_TIME_FREEZE:    col = SKYBLUE; size = 12.0f; break;
+                case PICKUP_DOUBLE_TROUBLE: col = ORANGE; size = 12.0f; break;
+                case PICKUP_MAGNET:         col = MAGENTA; size = 12.0f; break;
+            }
 
-        switch (pickup_types[i]) {
-            case PICKUP_XP_GEM:         col = BLUE; size = 6.0f; break;
-            case PICKUP_NUKE:           col = RED; size = 12.0f; break;
-            case PICKUP_TIME_FREEZE:    col = SKYBLUE; size = 12.0f; break;
-            case PICKUP_DOUBLE_TROUBLE: col = ORANGE; size = 12.0f; break;
-            case PICKUP_MAGNET:         col = MAGENTA; size = 12.0f; break;
+            DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 
+                           (Vector2){ size, size }, col);
         }
+    }
+}
 
-        DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 
-                       (Vector2){ size, size }, col);
+void PickupSystem_DrawForeground(void) {
+    for (int i = 0; i < MAX_PICKUPS; i++) {
+        if (pickup_bIsActive[i] && pickup_bIsMagnetized[i]) {
+            Color col = WHITE;
+            float size = 8.0f;
+
+            switch (pickup_types[i]) {
+                case PICKUP_XP_GEM:         col = BLUE; size = 6.0f; break;
+                case PICKUP_NUKE:           col = RED; size = 12.0f; break;
+                case PICKUP_TIME_FREEZE:    col = SKYBLUE; size = 12.0f; break;
+                case PICKUP_DOUBLE_TROUBLE: col = ORANGE; size = 12.0f; break;
+                case PICKUP_MAGNET:         col = MAGENTA; size = 12.0f; break;
+            }
+
+            DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 
+                           (Vector2){ size, size }, col);
+        }
     }
 }

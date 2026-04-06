@@ -6,12 +6,15 @@ void SwarmRendererSystem_Draw(void) {
     // Draw Enemies
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
+            extern float enemy_damageFlashes[];
+            Color finalColor = (enemy_damageFlashes[i] > 0.0f) ? WHITE : enemy_colors[i];
+            
             DrawRectangle(
                 (int)enemy_positions[i].x, 
                 (int)enemy_positions[i].y, 
                 (int)enemy_sizes[i], 
                 (int)enemy_sizes[i], 
-                enemy_colors[i]
+                finalColor
             );
         }
     }

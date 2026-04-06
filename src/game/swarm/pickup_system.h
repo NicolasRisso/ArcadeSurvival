@@ -8,7 +8,8 @@
 extern float g_TimeFreezeTimer;
 extern float g_DoubleTroubleTimer;
 
-void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos);
-void PickupSystem_Draw(void); // To render the pickups
+void PickupSystem_Update(float deltaTime, PlayerState* playerState, Vector2 playerPos);
+void PickupSystem_DrawBackground(void);
+void PickupSystem_DrawForeground(void); // To render the pickups
 
 #endif // PICKUP_SYSTEM_H

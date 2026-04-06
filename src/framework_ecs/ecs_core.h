@@ -26,6 +26,9 @@ extern Color enemy_colors[MAX_ENEMIES];
 extern float enemy_sizes[MAX_ENEMIES];
 extern int enemy_healths[MAX_ENEMIES];
 extern float enemy_maxSpeeds[MAX_ENEMIES];
+extern float enemy_attackTimers[MAX_ENEMIES];
+extern float enemy_damageFlashes[MAX_ENEMIES];
+extern int enemy_damages[MAX_ENEMIES];
 
 // --- PROJECTILE ECS ARRAYS ---
 extern bool projectile_bIsActive[MAX_PROJECTILES];
@@ -47,7 +50,7 @@ extern float pickup_magnetizeSpeeds[MAX_PICKUPS];
 void ECS_Init(void);
 
 // Spawn functions return the index on success, -1 on array full
-int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed);
+int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed, int damage);
 void ECS_DestroyEnemy(int entityId);
 
 int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int damage, int penetrations);

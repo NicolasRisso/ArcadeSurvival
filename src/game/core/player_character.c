@@ -27,8 +27,24 @@ void PlayerCharacter_Update(PlayerCharacter* character, float deltaTime) {
 
     // Movement Component handles updating positional input by itself.
     
+    // Handle state update (for flash timer decrement, health checks, etc)
+    PlayerState_Update(character->state, deltaTime);
+    
     // Call base Actor update to process any components attached
     Actor_Update(&character->base, deltaTime);
+    
+    // Clamp to map borders (-5000, -5000) to (5000, 5000)
+    if (character->base.position.x < -5000.0f) character->base.position.x = -5000.0f;
+    if (character->base.position.x > 5000.0f) character->base.position.x = 5000.0f;
+    if (character->base.position.y < -5000.0f) character->base.position.y = -5000.0f;
+    if (character->base.position.y > 5000.0f) character->base.position.y = 5000.0f;
+    
+    // Handle Visual feedback
+    if (character->state->damageFlashTimer > 0.0f) {
+        character->spriteComp.tint = WHITE;
+    } else {
+        character->spriteComp.tint = BLUE;
+    }
     
     // Handle combat (auto-firing)
     CombatSystem_Update(deltaTime, character->state, character->base.position);

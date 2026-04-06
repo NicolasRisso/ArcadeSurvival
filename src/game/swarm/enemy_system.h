@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 #include "game/types/game_types.h"
+#include "game/core/player_state.h"
 
 // --- Spawning Specific Types ---
 typedef enum {
@@ -21,7 +22,7 @@ typedef struct {
 } EnemySpawnPreset;
 
 void EnemySystem_Init(Vector2 playerSpawnPos);
-void EnemySystem_Update(float deltaTime, Vector2 playerPos);
+void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerState);
 void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset);
 
 #endif // ENEMY_SYSTEM_H

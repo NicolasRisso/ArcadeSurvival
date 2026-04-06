@@ -8,6 +8,9 @@ Color enemy_colors[MAX_ENEMIES];
 float enemy_sizes[MAX_ENEMIES];
 int enemy_healths[MAX_ENEMIES];
 float enemy_maxSpeeds[MAX_ENEMIES];
+float enemy_attackTimers[MAX_ENEMIES];
+float enemy_damageFlashes[MAX_ENEMIES];
+int enemy_damages[MAX_ENEMIES];
 
 // --- PROJECTILE ECS ARRAYS ---
 bool projectile_bIsActive[MAX_PROJECTILES];
@@ -29,6 +32,8 @@ void ECS_Init(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemy_bIsActive[i] = false;
         enemy_sizes[i] = 10.0f;
+        enemy_attackTimers[i] = 0.0f;
+        enemy_damageFlashes[i] = 0.0f;
     }
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         projectile_bIsActive[i] = false;
@@ -40,7 +45,7 @@ void ECS_Init(void) {
     }
 }
 
-int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed) {
+int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed, int damage) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (!enemy_bIsActive[i]) {
             enemy_positions[i] = pos;
@@ -49,6 +54,9 @@ int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpee
             enemy_sizes[i] = size;
             enemy_healths[i] = health;
             enemy_maxSpeeds[i] = maxSpeed;
+            enemy_damages[i] = damage;
+            enemy_attackTimers[i] = 0.0f;
+            enemy_damageFlashes[i] = 0.0f;
             enemy_bIsActive[i] = true;
             return i;
         }
