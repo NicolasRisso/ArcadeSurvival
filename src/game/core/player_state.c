@@ -6,6 +6,18 @@ void PlayerState_Init(PlayerState* state) {
     state->score = 0;
     state->level = 1;
     state->experience = 0;
+    
+    WeaponComponent_Init(&state->weapons);
+    
+    Weapon basicArrow = {0};
+    basicArrow.type = WEAPON_ARROW;
+    basicArrow.level = 1;
+    basicArrow.damage = 15;
+    basicArrow.penetration = 2;
+    basicArrow.fireRate = 1.0f; // 1 shot per second
+    basicArrow.cooldownTimer = 0.0f; // ready to fire immediately
+    
+    WeaponComponent_AddWeapon(&state->weapons, basicArrow);
 }
 
 void PlayerState_TakeDamage(PlayerState* state, int amount) {

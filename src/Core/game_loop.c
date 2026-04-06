@@ -9,6 +9,7 @@
 #include "framework_ecs/ecs_core.h"
 #include "game/swarm/swarm_renderer_system.h"
 #include "game/swarm/enemy_system.h"
+#include "game/swarm/projectile_system.h"
 
 // --- Global variables for Testing ---
 static PlayerController playerController;
@@ -65,6 +66,7 @@ void UpdateLogic(float deltaTime)
     // Update Swarm behaviors
     Vector2 playerPos = playerCharacter.base.position;
     EnemySystem_Update(deltaTime, playerPos);
+    ProjectileSystem_Update(deltaTime);
 }
 
 void RenderGraphics(void)

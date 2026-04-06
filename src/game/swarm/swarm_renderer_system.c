@@ -3,14 +3,28 @@
 #include "raylib.h"
 
 void SwarmRendererSystem_Draw(void) {
-    for (int i = 0; i < MAX_ENTITIES; i++) {
-        if (ecs_bIsActive[i]) {
+    // Draw Enemies
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemy_bIsActive[i]) {
             DrawRectangle(
-                (int)ecs_positions[i].x, 
-                (int)ecs_positions[i].y, 
-                (int)ecs_sizes[i], 
-                (int)ecs_sizes[i], 
-                ecs_colors[i]
+                (int)enemy_positions[i].x, 
+                (int)enemy_positions[i].y, 
+                (int)enemy_sizes[i], 
+                (int)enemy_sizes[i], 
+                enemy_colors[i]
+            );
+        }
+    }
+
+    // Draw Projectiles
+    for (int i = 0; i < MAX_PROJECTILES; i++) {
+        if (projectile_bIsActive[i]) {
+            DrawRectangle(
+                (int)projectile_positions[i].x, 
+                (int)projectile_positions[i].y, 
+                (int)projectile_sizes[i], 
+                (int)projectile_sizes[i], 
+                projectile_colors[i]
             );
         }
     }

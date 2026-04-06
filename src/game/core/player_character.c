@@ -1,4 +1,5 @@
 #include "game/core/player_character.h"
+#include "game/systems/combat/combat_system.h"
 
 void PlayerCharacter_Init(PlayerCharacter* character, int id, Vector2 spawnPos, PlayerController* controller, PlayerState* state) {
     if (!character) return;
@@ -28,4 +29,7 @@ void PlayerCharacter_Update(PlayerCharacter* character, float deltaTime) {
     
     // Call base Actor update to process any components attached
     Actor_Update(&character->base, deltaTime);
+    
+    // Handle combat (auto-firing)
+    CombatSystem_Update(deltaTime, character->state, character->base.position);
 }

@@ -39,15 +39,24 @@ void EnemySystem_Init(Vector2 playerSpawnPos) {
 void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
     int count = GetRandomValue(preset.countRange.min, preset.countRange.max);
     Color enemyColor = RED;
-    if (preset.enemyType == ENEMY_FAST) enemyColor = ORANGE;
-    if (preset.enemyType == ENEMY_TANK) enemyColor = DARKPURPLE;
+    float baseSpeed = 150.0f;
+    
+    if (preset.enemyType == ENEMY_FAST) {
+        enemyColor = ORANGE;
+        baseSpeed = 250.0f;
+    }
+    if (preset.enemyType == ENEMY_TANK) {
+        enemyColor = DARKPURPLE;
+        baseSpeed = 90.0f;
+    }
 
     switch (preset.pattern) {
         case SPAWN_SINGLE: {
             // Even if preset has count > 1, we treat SINGLE as its own logic usually
             for (int i = 0; i < count; i++) {
                 Vector2 pos = GetRandomPointAtDistance(playerPos, preset.distRange.min, preset.distRange.max);
-                ECS_SpawnEntity(pos, (Vector2){0,0}, enemyColor, 20.0f);
+                float speed = baseSpeed + (float)GetRandomValue(-20, 20);
+                ECS_SpawnEnemy(pos, enemyColor, 20.0f, 15, speed);
             }
         } break;
 
@@ -60,7 +69,8 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
             for (int i = 0; i < count; i++) {
                 float offset = (i - count/2.0f) * spacing;
                 Vector2 pos = Vector2Add(spawnCenter, Vector2Scale(side, offset));
-                ECS_SpawnEntity(pos, (Vector2){0,0}, enemyColor, 20.0f);
+                float speed = baseSpeed + (float)GetRandomValue(-20, 20);
+                ECS_SpawnEnemy(pos, enemyColor, 20.0f, 15, speed);
             }
         } break;
 
@@ -68,7 +78,8 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
             Vector2 spawnCenter = GetRandomPointAtDistance(playerPos, preset.distRange.min, preset.distRange.max);
             for (int i = 0; i < count; i++) {
                 Vector2 offset = { (float)GetRandomValue(-60, 60), (float)GetRandomValue(-60, 60) };
-                ECS_SpawnEntity(Vector2Add(spawnCenter, offset), (Vector2){0,0}, enemyColor, 20.0f);
+                float speed = baseSpeed + (float)GetRandomValue(-20, 20);
+                ECS_SpawnEnemy(Vector2Add(spawnCenter, offset), enemyColor, 20.0f, 15, speed);
             }
         } break;
 
@@ -77,7 +88,8 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
             for (int i = 0; i < count; i++) {
                 float angle = (i / (float)count) * PI * 2.0f;
                 Vector2 pos = { playerPos.x + cosf(angle) * dist, playerPos.y + sinf(angle) * dist };
-                ECS_SpawnEntity(pos, (Vector2){0,0}, enemyColor, 20.0f);
+                float speed = baseSpeed + (float)GetRandomValue(-20, 20);
+                ECS_SpawnEnemy(pos, enemyColor, 20.0f, 15, speed);
             }
         } break;
     }
@@ -105,16 +117,16 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos) {
     }
 
     // 2. Swarm AI (Keep same logic, just iterate active indices)
-    float moveSpeed = 150.0f;
     float repulseRadius = 25.0f;
     float playerRadius = 35.0f;
 
-    for (int i = 0; i < MAX_ENTITIES; i++) {
-        if (ecs_bIsActive[i]) {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemy_bIsActive[i]) {
             Vector2 desiredVelocity = {0, 0};
+            float moveSpeed = enemy_maxSpeeds[i];
             
             // Move towards player
-            Vector2 toPlayer = Vector2Subtract(playerPos, ecs_positions[i]);
+            Vector2 toPlayer = Vector2Subtract(playerPos, enemy_positions[i]);
             float distToPlayer = Vector2Length(toPlayer);
             
             if (distToPlayer > playerRadius) {
@@ -124,9 +136,9 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos) {
             
             // Separation
             Vector2 separation = {0, 0};
-            for (int j = 0; j < MAX_ENTITIES; j++) {
-                if (i != j && ecs_bIsActive[j]) {
-                    Vector2 toOther = Vector2Subtract(ecs_positions[i], ecs_positions[j]);
+            for (int j = 0; j < MAX_ENEMIES; j++) {
+                if (i != j && enemy_bIsActive[j]) {
+                    Vector2 toOther = Vector2Subtract(enemy_positions[i], enemy_positions[j]);
                     float distSq = toOther.x * toOther.x + toOther.y * toOther.y;
                     if (distSq < repulseRadius * repulseRadius && distSq > 0.01f) {
                         float dist = sqrtf(distSq);
@@ -137,9 +149,9 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos) {
                 }
             }
             
-            ecs_velocities[i] = Vector2Add(desiredVelocity, separation);
-            ecs_positions[i].x += ecs_velocities[i].x * deltaTime;
-            ecs_positions[i].y += ecs_velocities[i].y * deltaTime;
+            enemy_velocities[i] = Vector2Add(desiredVelocity, separation);
+            enemy_positions[i].x += enemy_velocities[i].x * deltaTime;
+            enemy_positions[i].y += enemy_velocities[i].y * deltaTime;
         }
     }
 }
