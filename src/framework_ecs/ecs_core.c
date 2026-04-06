@@ -1,4 +1,5 @@
 #include "framework_ecs/ecs_core.h"
+#include <string.h>
 
 // --- ENEMY ECS ARRAYS ---
 bool enemy_bIsActive[MAX_ENEMIES];
@@ -11,6 +12,7 @@ float enemy_maxSpeeds[MAX_ENEMIES];
 float enemy_attackTimers[MAX_ENEMIES];
 float enemy_damageFlashes[MAX_ENEMIES];
 int enemy_damages[MAX_ENEMIES];
+EnemyType enemy_types[MAX_ENEMIES];
 
 // --- PROJECTILE ECS ARRAYS ---
 bool projectile_bIsActive[MAX_PROJECTILES];
@@ -20,6 +22,7 @@ Color projectile_colors[MAX_PROJECTILES];
 float projectile_sizes[MAX_PROJECTILES];
 int projectile_damage[MAX_PROJECTILES];
 int projectile_penetrations[MAX_PROJECTILES];
+unsigned char projectile_hitMasks[MAX_PROJECTILES][125];
 
 // --- PICKUP ECS ARRAYS ---
 bool pickup_bIsActive[MAX_PICKUPS];
@@ -27,6 +30,7 @@ Vector2 pickup_positions[MAX_PICKUPS];
 PickupType pickup_types[MAX_PICKUPS];
 bool pickup_bIsMagnetized[MAX_PICKUPS];
 float pickup_magnetizeSpeeds[MAX_PICKUPS];
+int pickup_values[MAX_PICKUPS];
 
 void ECS_Init(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
@@ -38,6 +42,7 @@ void ECS_Init(void) {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         projectile_bIsActive[i] = false;
         projectile_sizes[i] = 5.0f;
+        memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
     }
     for (int i = 0; i < MAX_PICKUPS; i++) {
         pickup_bIsActive[i] = false;
@@ -45,7 +50,7 @@ void ECS_Init(void) {
     }
 }
 
-int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed, int damage) {
+int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpeed, int damage, EnemyType type) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (!enemy_bIsActive[i]) {
             enemy_positions[i] = pos;
@@ -55,6 +60,7 @@ int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpee
             enemy_healths[i] = health;
             enemy_maxSpeeds[i] = maxSpeed;
             enemy_damages[i] = damage;
+            enemy_types[i] = type;
             enemy_attackTimers[i] = 0.0f;
             enemy_damageFlashes[i] = 0.0f;
             enemy_bIsActive[i] = true;
@@ -79,6 +85,7 @@ int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int dam
             projectile_sizes[i] = size;
             projectile_damage[i] = damage;
             projectile_penetrations[i] = penetrations;
+            memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
             projectile_bIsActive[i] = true;
             return i;
         }
@@ -92,11 +99,12 @@ void ECS_DestroyProjectile(int entityId) {
     }
 }
 
-int ECS_SpawnPickup(Vector2 pos, PickupType type) {
+int ECS_SpawnPickup(Vector2 pos, PickupType type, int value) {
     for (int i = 0; i < MAX_PICKUPS; i++) {
         if (!pickup_bIsActive[i]) {
             pickup_positions[i] = pos;
             pickup_types[i] = type;
+            pickup_values[i] = value;
             pickup_bIsMagnetized[i] = false;
             pickup_magnetizeSpeeds[i] = 0.0f;
             pickup_bIsActive[i] = true;

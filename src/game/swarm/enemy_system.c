@@ -65,7 +65,7 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
             for (int i = 0; i < count; i++) {
                 Vector2 pos = GetRandomPointAtDistance(playerPos, preset.distRange.min, preset.distRange.max);
                 float speed = baseSpeed + (float)GetRandomValue(-20, 20);
-                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage);
+                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage, preset.enemyType);
             }
         } break;
 
@@ -79,7 +79,7 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
                 float offset = (i - count/2.0f) * spacing;
                 Vector2 pos = Vector2Add(spawnCenter, Vector2Scale(side, offset));
                 float speed = baseSpeed + (float)GetRandomValue(-20, 20);
-                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage);
+                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage, preset.enemyType);
             }
         } break;
 
@@ -88,7 +88,7 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
             for (int i = 0; i < count; i++) {
                 Vector2 offset = { (float)GetRandomValue(-60, 60), (float)GetRandomValue(-60, 60) };
                 float speed = baseSpeed + (float)GetRandomValue(-20, 20);
-                ECS_SpawnEnemy(Vector2Add(spawnCenter, offset), enemyColor, size, health, speed, damage);
+                ECS_SpawnEnemy(Vector2Add(spawnCenter, offset), enemyColor, size, health, speed, damage, preset.enemyType);
             }
         } break;
 
@@ -98,7 +98,7 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
                 float angle = (i / (float)count) * PI * 2.0f;
                 Vector2 pos = { playerPos.x + cosf(angle) * dist, playerPos.y + sinf(angle) * dist };
                 float speed = baseSpeed + (float)GetRandomValue(-20, 20);
-                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage);
+                ECS_SpawnEnemy(pos, enemyColor, size, health, speed, damage, preset.enemyType);
             }
         } break;
     }
@@ -125,25 +125,26 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerS
         }
     }
 
-    // Checking global time freeze
-    extern float g_TimeFreezeTimer;
-    if (g_TimeFreezeTimer > 0.0f) {
-        return; // Enemies do not move or think
-    }
-
-    // 2. Swarm AI (Keep same logic, just iterate active indices)
-    float repulseRadius = 25.0f;
-    float playerRadius = 35.0f;
-
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
-            // Update timers
+            extern float g_TimeFreezeTimer;
+            // Update timers (these should always update even if time is frozen 
+            // to allow damage flashes to wear off)
             if (enemy_attackTimers[i] > 0.0f) {
                 enemy_attackTimers[i] -= deltaTime;
             }
             if (enemy_damageFlashes[i] > 0.0f) {
                 enemy_damageFlashes[i] -= deltaTime;
             }
+
+            // If time is frozen, skip movement and attacking
+            if (g_TimeFreezeTimer > 0.0f) {
+                enemy_velocities[i] = (Vector2){0, 0};
+                continue;
+            }
+
+            float repulseRadius = 25.0f;
+            float playerRadius = 35.0f;
 
             Vector2 desiredVelocity = {0, 0};
             float moveSpeed = enemy_maxSpeeds[i];

@@ -35,8 +35,11 @@ void PlayerState_Update(PlayerState* state, float deltaTime) {
 void PlayerState_TakeDamage(PlayerState* state, int amount) {
     if (!state || state->health.bIsDead) return;
     
+    // Invulnerability window: if already flashing, skip damage
+    if (state->damageFlashTimer > 0.0f) return;
+    
     state->health.currentHealth -= amount;
-    state->damageFlashTimer = 0.1f;
+    state->damageFlashTimer = 0.5f; // 0.5s invulnerability/flash
     
     if (state->health.currentHealth < 0) {
         state->health.currentHealth = 0;

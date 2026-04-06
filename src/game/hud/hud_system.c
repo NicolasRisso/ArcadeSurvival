@@ -47,14 +47,16 @@ void HUDSystem_Draw(PlayerState* state) {
     if (g_TimeFreezeTimer > 0) {
         char buff[64];
         sprintf(buff, "TIME FREEZE: %.1f", g_TimeFreezeTimer);
-        DrawText(buff, 10, yOffset, 20, SKYBLUE);
+        int textWidth = MeasureText(buff, 20);
+        DrawText(buff, (screenWidth - textWidth) / 2, yOffset, 20, SKYBLUE);
         yOffset += 25;
     }
     
     if (g_DoubleTroubleTimer > 0) {
         char buff[64];
         sprintf(buff, "DOUBLE TROUBLE: %.1f", g_DoubleTroubleTimer);
-        DrawText(buff, 10, yOffset, 20, ORANGE);
+        int textWidth = MeasureText(buff, 20);
+        DrawText(buff, (screenWidth - textWidth) / 2, yOffset, 20, ORANGE);
         yOffset += 25;
     }
 }

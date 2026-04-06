@@ -38,8 +38,8 @@ void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
         Vector2 toPlayer = Vector2Subtract(playerPos, pickup_positions[i]);
         float distSq = toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y;
 
-        // Check if inside magnetize zone or already magnetized
-        if (pickup_bIsMagnetized[i] || distSq < magnetZoneSq) {
+        // Check if inside magnetize zone or already magnetized (Only XP gems)
+        if (pickup_types[i] == PICKUP_XP_GEM && (pickup_bIsMagnetized[i] || distSq < magnetZoneSq)) {
             pickup_bIsMagnetized[i] = true;
             
             // Accelerate towards player
@@ -64,7 +64,7 @@ void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
         if (distSq <= pickupRadiusSq) {
             switch (pickup_types[i]) {
                 case PICKUP_XP_GEM:
-                    PlayerState_AddExperience(state, 10);
+                    PlayerState_AddExperience(state, pickup_values[i]);
                     break;
                 case PICKUP_NUKE:
                     TriggerNuke();

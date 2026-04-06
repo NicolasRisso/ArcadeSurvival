@@ -39,9 +39,14 @@ void PlayerCharacter_Update(PlayerCharacter* character, float deltaTime) {
     if (character->base.position.y < -5000.0f) character->base.position.y = -5000.0f;
     if (character->base.position.y > 5000.0f) character->base.position.y = 5000.0f;
     
-    // Handle Visual feedback
+    // Handle Visual feedback (Flash/Invulnerability)
     if (character->state->damageFlashTimer > 0.0f) {
-        character->spriteComp.tint = WHITE;
+        // Oscillate every 0.1s (0.05s on, 0.05s off)
+        if (((int)(character->state->damageFlashTimer * 20)) % 2 == 0) {
+            character->spriteComp.tint = WHITE;
+        } else {
+            character->spriteComp.tint = BLUE;
+        }
     } else {
         character->spriteComp.tint = BLUE;
     }

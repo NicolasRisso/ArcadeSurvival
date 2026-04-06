@@ -24,12 +24,27 @@ void ProjectileSystem_Update(float deltaTime) {
             float distSq = toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y;
 
             if (distSq < hitRadiusSq) {
+                // Check if this enemy was already hit by THIS projectile
+                int byteIdx = j / 8;
+                int bitIdx = j % 8;
+                if (projectile_hitMasks[i][byteIdx] & (1 << bitIdx)) {
+                    continue; // Already hit, skip
+                }
+
+                // Mark as hit
+                projectile_hitMasks[i][byteIdx] |= (1 << bitIdx);
+
                 // Hit!
                 enemy_healths[j] -= projectile_damage[i];
                 enemy_damageFlashes[j] = 0.1f;
                 if (enemy_healths[j] <= 0) {
-                    // Span pickup on death
-                    // 0.5% chance = value between 0 and 1000 <= 5
+                    // Determine XP value based on enemy type
+                    int xpValue = 10; // Default BASIC
+                    if (enemy_types[j] == ENEMY_FAST) xpValue = 25;
+                    else if (enemy_types[j] == ENEMY_TANK) xpValue = 100;
+
+                    // Spawn pickup on death
+                    // 0.5% chance for a power-up, otherwise XP gem
                     int roll = GetRandomValue(0, 1000);
                     PickupType typeToSpawn = PICKUP_XP_GEM;
                     if (roll <= 5) {
@@ -39,7 +54,8 @@ void ProjectileSystem_Update(float deltaTime) {
                         else if (pRoll == 2) typeToSpawn = PICKUP_DOUBLE_TROUBLE;
                         else typeToSpawn = PICKUP_MAGNET;
                     }
-                    ECS_SpawnPickup(enemy_positions[j], typeToSpawn);
+                    
+                    ECS_SpawnPickup(enemy_positions[j], typeToSpawn, xpValue);
                     
                     ECS_DestroyEnemy(j);
                 }
