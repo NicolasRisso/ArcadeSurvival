@@ -1,17 +1,20 @@
 #ifndef WEAPON_TYPES_H
 #define WEAPON_TYPES_H
 
+#define MAX_WEAPON_LEVEL 15
+
 typedef enum {
     WEAPON_NONE = 0,
-    WEAPON_ARROW
+    WEAPON_FIREBALL_WAND,
+    WEAPON_CRYSTAL_SHARD,
+    WEAPON_DEATH_AURA,
+    WEAPON_BOMB_SHOES,
+    WEAPON_NATURE_SPIKES
 } WeaponType;
 
 typedef struct {
     WeaponType type;
     int level;
-    int damage;
-    int penetration;
-    float fireRate;      // Time between shots in seconds
     float cooldownTimer; // Current timer tracking when we can shoot again
 } Weapon;
 

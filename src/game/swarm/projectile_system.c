@@ -1,75 +1,98 @@
 #include "game/swarm/projectile_system.h"
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
+#include <string.h>
 
-void ProjectileSystem_Update(float deltaTime) {
-    float hitRadiusSq = (20.0f + 5.0f) * (20.0f + 5.0f); // enemy size + projectile size
+static void SpawnExplosion(Vector2 pos, float radius, int damage) {
+    ECS_SpawnProjectileEx(pos, (Vector2){0,0}, YELLOW, radius, damage, 999, PROJ_EXPLOSION, 0.1f, 2147483647);
+}
+
+void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
+    if (!state) return;
+    int minutes = (int)(state->gameTime / 60);
+    float xpMultiplier = 1.0f + (minutes * 0.20f);
 
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (!projectile_bIsActive[i]) continue;
 
-        // 1. Move Projectile
+        // 1. Update Timer
+        if (projectile_timers[i] > 0.0f) {
+            projectile_timers[i] -= deltaTime;
+            if (projectile_timers[i] <= 0.0f) {
+                // Timeout logic
+                if (projectile_types[i] == PROJ_FIREBALL || projectile_types[i] == PROJ_BOMB) {
+                    SpawnExplosion(projectile_positions[i], projectile_sizes[i] * 4.0f, projectile_damage[i] / 2);
+                }
+                ECS_DestroyProjectile(i);
+                continue;
+            }
+        }
+
+        // 2. Move Projectile
         projectile_positions[i].x += projectile_velocities[i].x * deltaTime;
         projectile_positions[i].y += projectile_velocities[i].y * deltaTime;
 
-        // 2. Continuous Collision Detection (O(P * E))
-        bool isDestroyed = false;
+        // 3. Special Ticking Logic
+        if (projectile_types[i] == PROJ_SPIKE) {
+            projectile_specialTimers[i] -= deltaTime;
+            if (projectile_specialTimers[i] <= 0.0f) {
+                // Reset hit mask to allow re-hitting enemies next tick
+                memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
+                projectile_specialTimers[i] = 0.2f; // Default tick rate, can be adjusted
+            }
+        }
+
+        // 4. Collision Detection
+        float hitRadiusSq = (20.0f + projectile_sizes[i]) * (20.0f + projectile_sizes[i]);
         
         for (int j = 0; j < MAX_ENEMIES; j++) {
             if (!enemy_bIsActive[j]) continue;
             
-            // Wait, we need to make sure a projectile doesn't hit the SAME enemy twice per frame.
-            // Since it hits instantly, we apply damage and decrement penetration immediately.
-            Vector2 toEnemy = Vector2Subtract(enemy_positions[j], projectile_positions[i]);
-            float distSq = toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y;
+            float distSq = Vector2DistanceSqr(enemy_positions[j], projectile_positions[i]);
 
             if (distSq < hitRadiusSq) {
-                // Check if this enemy was already hit by THIS projectile
+                // Check hit mask
                 int byteIdx = j / 8;
                 int bitIdx = j % 8;
-                if (projectile_hitMasks[i][byteIdx] & (1 << bitIdx)) {
-                    continue; // Already hit, skip
-                }
+                if (projectile_hitMasks[i][byteIdx] & (1 << bitIdx)) continue;
 
                 // Mark as hit
                 projectile_hitMasks[i][byteIdx] |= (1 << bitIdx);
 
-                // Hit!
-                enemy_healths[j] -= projectile_damage[i];
-                enemy_damageFlashes[j] = 0.1f;
+                // Apply damage
+                if (projectile_types[i] != PROJ_BOMB) {
+                    enemy_healths[j] -= projectile_damage[i];
+                    enemy_damageFlashes[j] = 0.1f;
+                    projectile_damageDealt[i] += projectile_damage[i];
+                }
+
+                if (projectile_damageDealt[i] >= projectile_damageCaps[i]) {
+                    ECS_DestroyProjectile(i);
+                    break;
+                }
+
                 if (enemy_healths[j] <= 0) {
-                    // Determine XP value based on enemy type
-                    int xpValue = 10; // Default BASIC
+                    int xpValue = 10;
                     if (enemy_types[j] == ENEMY_FAST) xpValue = 25;
                     else if (enemy_types[j] == ENEMY_TANK) xpValue = 100;
-
-                    // Spawn pickup on death
-                    // 0.5% chance for a power-up, otherwise XP gem
-                    int roll = GetRandomValue(0, 1000);
-                    PickupType typeToSpawn = PICKUP_XP_GEM;
-                    if (roll <= 5) {
-                        int pRoll = GetRandomValue(0, 3);
-                        if (pRoll == 0) typeToSpawn = PICKUP_NUKE;
-                        else if (pRoll == 1) typeToSpawn = PICKUP_TIME_FREEZE;
-                        else if (pRoll == 2) typeToSpawn = PICKUP_DOUBLE_TROUBLE;
-                        else typeToSpawn = PICKUP_MAGNET;
-                    }
                     
-                    ECS_SpawnPickup(enemy_positions[j], typeToSpawn, xpValue);
+                    // Apply time scaling
+                    xpValue = (int)(xpValue * xpMultiplier);
                     
+                    ECS_SpawnPickup(enemy_positions[j], PICKUP_XP_GEM, xpValue);
                     ECS_DestroyEnemy(j);
                 }
 
-                projectile_penetrations[i]--;
-                if (projectile_penetrations[i] <= 0) {
-                    ECS_DestroyProjectile(i);
-                    isDestroyed = true;
-                    break; // stop checking this projectile
-                } else {
-                    // For a penetrating arrow, optionally we shouldn't hit the same enemy multiple times. 
-                    // But if the enemy dies instantly or the arrow quickly phases through, it might hit it next frame.
-                    // To keep it simple, hitting an enemy destroys the enemy if damage is enough, 
-                    // else it might hit it again next frame. We'll leave it as is for the basic test.
+                // Interaction logic
+                if (projectile_types[i] == PROJ_NORMAL || projectile_types[i] == PROJ_FIREBALL) {
+                    projectile_penetrations[i]--;
+                    if (projectile_penetrations[i] <= 0) {
+                        if (projectile_types[i] == PROJ_FIREBALL) {
+                            SpawnExplosion(projectile_positions[i], projectile_sizes[i] * 4.0f, projectile_damage[i] / 2);
+                        }
+                        ECS_DestroyProjectile(i);
+                        break;
+                    }
                 }
             }
         }

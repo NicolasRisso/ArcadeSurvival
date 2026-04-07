@@ -59,4 +59,69 @@ void HUDSystem_Draw(PlayerState* state) {
         DrawText(buff, (screenWidth - textWidth) / 2, yOffset, 20, ORANGE);
         yOffset += 25;
     }
+    
+    // GAME TIMER
+    int minutes = (int)(state->gameTime / 60);
+    int seconds = (int)(state->gameTime) % 60;
+    char timeBuf[16];
+    sprintf(timeBuf, "%02d:%02d", minutes, seconds);
+    int timeTextWidth = MeasureText(timeBuf, 25);
+    DrawText(timeBuf, screenWidth - timeTextWidth - 20, barHeight + 35, 25, BLACK);
+}
+
+#include "game/systems/combat/weapon_data.h"
+
+static void DrawCard(Rectangle bounds, LevelUpOption option, bool isHovered) {
+    DrawRectangleRec(bounds, isHovered ? LIGHTGRAY : GRAY);
+    DrawRectangleLinesEx(bounds, 3, isHovered ? YELLOW : BLACK);
+    
+    const char* name = GetWeaponName(option.weaponType);
+    char desc[256];
+    GetWeaponDescription(option.weaponType, option.currentLevel, desc);
+    
+    int titleSize = 25;
+    DrawText(name, (int)bounds.x + 10, (int)bounds.y + 10, titleSize, BLACK);
+    
+    if (option.currentLevel == 0) {
+        DrawText("NEW!", (int)bounds.x + 10, (int)bounds.y + 40, 20, MAROON);
+    } else {
+        char lvBuf[16];
+        sprintf(lvBuf, "LEVEL %d", option.currentLevel + 1);
+        DrawText(lvBuf, (int)bounds.x + 10, (int)bounds.y + 40, 20, DARKGREEN);
+    }
+    
+    DrawTextEx(GetFontDefault(), desc, (Vector2){bounds.x + 10, bounds.y + 80}, 18, 1, DARKGRAY);
+}
+
+void HUDSystem_DrawLevelUp(PlayerState* state) {
+    if (!state || !state->bIsLevelingUp) return;
+    
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    
+    // Dim background
+    DrawRectangle(0, 0, screenWidth, screenHeight, (Color){ 0, 0, 0, 150 });
+    
+    int cardWidth = 300;
+    int cardHeight = 450;
+    int spacing = 50;
+    int totalWidth = (state->levelUpOptionCount * cardWidth) + ((state->levelUpOptionCount - 1) * spacing);
+    int startX = (screenWidth - totalWidth) / 2;
+    int startY = (screenHeight - cardHeight) / 2;
+    
+    Vector2 mousePos = GetMousePosition();
+    
+    const char* title = "LEVEL UP! CHOOSE AN UPGRADE";
+    DrawText(title, (screenWidth - MeasureText(title, 40)) / 2, startY - 80, 40, WHITE);
+
+    for (int i = 0; i < state->levelUpOptionCount; i++) {
+        Rectangle bounds = { (float)startX + i * (cardWidth + spacing), (float)startY, (float)cardWidth, (float)cardHeight };
+        bool isHovered = CheckCollisionPointRec(mousePos, bounds);
+        DrawCard(bounds, state->levelUpOptions[i], isHovered);
+        
+        // Key hint
+        char hint[4];
+        sprintf(hint, "%d", i + 1);
+        DrawText(hint, (int)bounds.x + cardWidth / 2 - 10, (int)bounds.y + cardHeight + 20, 30, WHITE);
+    }
 }

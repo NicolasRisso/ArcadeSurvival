@@ -4,5 +4,6 @@
 #include "game/core/player_state.h"
 
 void HUDSystem_Draw(PlayerState* state);
+void HUDSystem_DrawLevelUp(PlayerState* state);
 
 #endif // HUD_SYSTEM_H

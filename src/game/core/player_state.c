@@ -1,4 +1,6 @@
 #include "game/core/player_state.h"
+#include "game/systems/combat/weapon_selector.h"
+#include "raylib.h"
 
 void PlayerState_Init(PlayerState* state) {
     if (!state) return;
@@ -8,16 +10,10 @@ void PlayerState_Init(PlayerState* state) {
     XPComponent_Init(&state->xp);
     
     WeaponComponent_Init(&state->weapons);
+    state->gameTime = 0.0f;
     
-    Weapon basicArrow = {0};
-    basicArrow.type = WEAPON_ARROW;
-    basicArrow.level = 1;
-    basicArrow.damage = 15;
-    basicArrow.penetration = 2;
-    basicArrow.fireRate = 1.0f; // 1 shot per second
-    basicArrow.cooldownTimer = 0.0f; // ready to fire immediately
-    
-    WeaponComponent_AddWeapon(&state->weapons, basicArrow);
+    // Start with Crystal Shard
+    WeaponComponent_UpgradeOrAdd(&state->weapons, WEAPON_CRYSTAL_SHARD);
 }
 
 void PlayerState_Update(PlayerState* state, float deltaTime) {
@@ -30,6 +26,8 @@ void PlayerState_Update(PlayerState* state, float deltaTime) {
     if (state->health.currentHealth <= 0) {
         state->health.bIsDead = true;
     }
+
+    state->gameTime += deltaTime;
 }
 
 void PlayerState_TakeDamage(PlayerState* state, int amount) {
@@ -49,6 +47,12 @@ void PlayerState_TakeDamage(PlayerState* state, int amount) {
 void PlayerState_AddExperience(PlayerState* state, int amount) {
     if (!state) return;
     if (XPComponent_AddExperience(&state->xp, amount)) {
-        // Level up happened, could heal or something
+        // Level up happened!
+        state->levelUpOptionCount = WeaponSelector_GetRandomOptions(state, state->levelUpOptions);
+        if (state->levelUpOptionCount > 0) {
+            state->bIsLevelingUp = true;
+            EnableCursor();
+            ShowCursor();
+        }
     }
 }

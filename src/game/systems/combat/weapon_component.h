@@ -11,6 +11,7 @@ typedef struct {
 } WeaponComponent;
 
 void WeaponComponent_Init(WeaponComponent* comp);
-void WeaponComponent_AddWeapon(WeaponComponent* comp, Weapon weapon);
+void WeaponComponent_UpgradeOrAdd(WeaponComponent* comp, WeaponType type);
+bool WeaponComponent_HasWeapon(WeaponComponent* comp, WeaponType type);
 
 #endif // WEAPON_COMPONENT_H

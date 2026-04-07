@@ -23,6 +23,6 @@ typedef struct {
 
 void EnemySystem_Init(Vector2 playerSpawnPos);
 void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerState);
-void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset);
+void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset, int minutes);
 
 #endif // ENEMY_SYSTEM_H

@@ -5,7 +5,10 @@
 #include "game/systems/combat/weapon_component.h"
 #include "game/systems/level/xp_component.h"
 
-typedef struct {
+#include "game/systems/level/level_up_types.h"
+#include <stdbool.h>
+
+typedef struct PlayerState {
     HealthComponent health;
     int score;
     XPComponent xp;
@@ -13,6 +16,13 @@ typedef struct {
     float damageFlashTimer;
     
     WeaponComponent weapons;
+    
+    // Level Selection State
+    bool bIsLevelingUp;
+    LevelUpOption levelUpOptions[3];
+    int levelUpOptionCount;
+    
+    float gameTime;
 } PlayerState;
 
 void PlayerState_Init(PlayerState* state);

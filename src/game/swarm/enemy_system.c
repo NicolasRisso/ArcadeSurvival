@@ -33,17 +33,21 @@ void EnemySystem_Init(Vector2 playerSpawnPos) {
     g_SpawnTimer = 0;
     // Immediate starting spawns using our new Preset 0 (Single)
     for (int i = 0; i < 10; i++) {
-        EnemySystem_TriggerPreset(playerSpawnPos, g_SpawnPresets[0]);
+        EnemySystem_TriggerPreset(playerSpawnPos, g_SpawnPresets[0], 0);
     }
 }
 
-void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
+void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset, int minutes) {
     int count = GetRandomValue(preset.countRange.min, preset.countRange.max);
     Color enemyColor = RED;
     float baseSpeed = 150.0f;
     int health = 15;
     int damage = 7;
     float size = 20.0f;
+    
+    // Scale stats based on minutes passed
+    float hpMultiplier = 1.0f + (minutes * 0.35f);
+    float dmgMultiplier = 1.0f + (minutes * 0.10f);
     
     if (preset.enemyType == ENEMY_FAST) {
         enemyColor = ORANGE;
@@ -59,6 +63,9 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
         damage = 15;
         size = 35.0f;
     }
+
+    health = (int)(health * hpMultiplier);
+    damage = (int)(damage * dmgMultiplier);
 
     switch (preset.pattern) {
         case SPAWN_SINGLE: {
@@ -105,6 +112,12 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset) {
 }
 
 void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerState) {
+    if (!playerState) return;
+
+    int minutes = (int)(playerState->gameTime / 60);
+    g_SpawnRate = 1.5f - (minutes * 0.25f);
+    if (g_SpawnRate < 0.2f) g_SpawnRate = 0.2f;
+
     // 1. Weighted Random Spawning Logic
     g_SpawnTimer += deltaTime;
     if (g_SpawnTimer >= g_SpawnRate) {
@@ -119,7 +132,7 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerS
         for (int i = 0; i < PRESET_COUNT; i++) {
             currentWeight += g_SpawnPresets[i].weight;
             if (roll <= currentWeight) {
-                EnemySystem_TriggerPreset(playerPos, g_SpawnPresets[i]);
+                EnemySystem_TriggerPreset(playerPos, g_SpawnPresets[i], minutes);
                 break;
             }
         }

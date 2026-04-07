@@ -1,6 +1,9 @@
 #ifndef SWARM_RENDERER_SYSTEM_H
 #define SWARM_RENDERER_SYSTEM_H
 
-void SwarmRendererSystem_Draw(void);
+#include "game/core/player_state.h"
+#include "raylib.h"
+
+void SwarmRendererSystem_Draw(Vector2 playerPos, PlayerState* state);
 
 #endif // SWARM_RENDERER_SYSTEM_H

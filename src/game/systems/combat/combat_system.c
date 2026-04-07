@@ -1,4 +1,5 @@
 #include "game/systems/combat/combat_system.h"
+#include "game/systems/combat/weapon_data.h"
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
 #include <float.h>
@@ -10,48 +11,114 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
 
     for (int i = 0; i < state->weapons.activeWeaponCount; i++) {
         Weapon* w = &state->weapons.weapons[i];
-        
         if (w->type == WEAPON_NONE) continue;
-        
-        float realFireRate = (g_DoubleTroubleTimer > 0.0f) ? w->fireRate * 0.5f : w->fireRate;
-        int realDamage = (g_DoubleTroubleTimer > 0.0f) ? w->damage * 2 : w->damage;
-        
+
+        const WeaponLevelStats* stats = GetWeaponStats(w->type, w->level);
+        if (!stats) continue;
+
+        float realFireRate = (g_DoubleTroubleTimer > 0.0f) ? stats->fireRate * 0.5f : stats->fireRate;
+        int realDamage = (g_DoubleTroubleTimer > 0.0f) ? stats->damage * 2 : stats->damage;
+
         w->cooldownTimer -= deltaTime;
-        
+
         if (w->cooldownTimer <= 0.0f) {
-            // Find closest enemy
-            int closestEnemyIdx = -1;
-            float closestDistSq = FLT_MAX;
-            
-            for (int e = 0; e < MAX_ENEMIES; e++) {
-                if (enemy_bIsActive[e]) {
-                    Vector2 toEnemy = Vector2Subtract(enemy_positions[e], playerPos);
-                    float distSq = toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y;
-                    if (distSq < closestDistSq) {
-                        closestDistSq = distSq;
-                        closestEnemyIdx = e;
+            bool fired = false;
+
+            switch (w->type) {
+                case WEAPON_FIREBALL_WAND: {
+                    // Fires in 4 directions (multiple of 90 deg)
+                    // Level 1-4: 1 per axis (4 total)
+                    // Level 5-9: 2 per axis (8 total)
+                    // Level 10-14: 3 per axis (12 total)
+                    // Level 15: 4 per axis (16 total)
+                    int perAxis = stats->projectileCount / 4;
+                    for (int axis = 0; axis < 4; axis++) {
+                        float angleBase = axis * 90.0f * (PI / 180.0f);
+                        for (int j = 0; j < perAxis; j++) {
+                            // Subtle offset for multiple projectiles
+                            float angle = angleBase + (j - (perAxis-1)*0.5f) * 0.1f;
+                            Vector2 dir = { cosf(angle), sinf(angle) };
+                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 300.0f), ORANGE, 8.0f, realDamage, stats->penetration, PROJ_FIREBALL, stats->specialValue, stats->damageCap);
+                        }
                     }
+                    fired = true;
+                    break;
                 }
+
+                case WEAPON_CRYSTAL_SHARD: {
+                    // Fires at closest enemy
+                    int closestIdx = -1;
+                    float minDistSq = FLT_MAX;
+                    for (int e = 0; e < MAX_ENEMIES; e++) {
+                        if (enemy_bIsActive[e]) {
+                            float d2 = Vector2DistanceSqr(playerPos, enemy_positions[e]);
+                            if (d2 < minDistSq) { minDistSq = d2; closestIdx = e; }
+                        }
+                    }
+
+                    if (closestIdx != -1) {
+                        Vector2 target = enemy_positions[closestIdx];
+                        Vector2 baseDir = Vector2Normalize(Vector2Subtract(target, playerPos));
+                        for (int j = 0; j < stats->projectileCount; j++) {
+                            float spread = (j - (stats->projectileCount-1)*0.5f) * 0.2f;
+                            Vector2 dir = Vector2Rotate(baseDir, spread);
+                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 450.0f), BLUE, 5.0f, realDamage, stats->penetration, PROJ_NORMAL, 0.0f, stats->damageCap);
+                        }
+                        fired = true;
+                    }
+                    break;
+                }
+
+                case WEAPON_DEATH_AURA: {
+                    // Death Aura deal damage every tick (stats->fireRate)
+                    // We can just use the existing loop and apply damage to all enemies in range
+                    for (int e = 0; e < MAX_ENEMIES; e++) {
+                        if (enemy_bIsActive[e]) {
+                            if (Vector2Distance(playerPos, enemy_positions[e]) < stats->range) {
+                                enemy_healths[e] -= realDamage;
+                                enemy_damageFlashes[e] = 0.1f;
+                                if (enemy_healths[e] <= 0) {
+                                    ECS_SpawnPickup(enemy_positions[e], PICKUP_XP_GEM, 10);
+                                    ECS_DestroyEnemy(e);
+                                }
+                            }
+                        }
+                    }
+                    fired = true;
+                    break;
+                }
+
+                case WEAPON_BOMB_SHOES: {
+                    // Drops a bomb at feet
+                    ECS_SpawnProjectileEx(playerPos, (Vector2){0,0}, DARKGRAY, 12.0f, realDamage, 1, PROJ_BOMB, stats->specialValue, stats->damageCap);
+                    fired = true;
+                    break;
+                }
+
+                case WEAPON_NATURE_SPIKES: {
+                    // Target a random enemy in range
+                    int activeEnemies[MAX_ENEMIES];
+                    int count = 0;
+                    for (int e = 0; e < MAX_ENEMIES; e++) {
+                        if (enemy_bIsActive[e]) activeEnemies[count++] = e;
+                    }
+
+                    if (count > 0) {
+                        int targetIdx = activeEnemies[GetRandomValue(0, count - 1)];
+                        Vector2 targetPos = enemy_positions[targetIdx];
+                        // Spawn a spike at feet. Timer is 2s (or 3s at lvl 10+)
+                        float lifeTime = (w->level >= 10) ? 3.0f : 2.0f;
+                        ECS_SpawnProjectileEx(targetPos, (Vector2){0,0}, GREEN, 15.0f, realDamage, 999, PROJ_SPIKE, lifeTime, stats->damageCap);
+                        fired = true;
+                    }
+                    break;
+                }
+
+                default: break;
             }
-            
-            if (closestEnemyIdx != -1) {
-                // Fire weapon
-                // Arrow shoots straight towards the enemy
-                Vector2 targetPos = enemy_positions[closestEnemyIdx];
-                Vector2 dir = Vector2Normalize(Vector2Subtract(targetPos, playerPos));
-                float projSpeed = 400.0f;
-                Vector2 vel = Vector2Scale(dir, projSpeed);
-                
-                ECS_SpawnProjectile(
-                    playerPos, 
-                    vel, 
-                    BLUE, 
-                    6.0f, 
-                    realDamage, 
-                    w->penetration
-                );
-                
-                w->cooldownTimer = realFireRate; // Reset cooldown
+
+            if (fired) {
+                w->cooldownTimer = realFireRate;
             }
         }
     }

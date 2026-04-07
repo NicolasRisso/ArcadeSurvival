@@ -56,19 +56,59 @@ void InitGame(void)
 
 void ProcessInput(void)
 {
+    if (playerState.bIsLevelingUp) {
+        // Selection Input
+        int selection = -1;
+        if (IsKeyPressed(KEY_ONE)) selection = 0;
+        if (IsKeyPressed(KEY_TWO)) selection = 1;
+        if (IsKeyPressed(KEY_THREE)) selection = 2;
+
+        // Mouse Selection
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            Vector2 mousePos = GetMousePosition();
+            int screenWidth = GetScreenWidth();
+            int screenHeight = GetScreenHeight();
+            int cardWidth = 300;
+            int cardHeight = 450;
+            int spacing = 50;
+            int totalWidth = (playerState.levelUpOptionCount * cardWidth) + ((playerState.levelUpOptionCount - 1) * spacing);
+            int startX = (screenWidth - totalWidth) / 2;
+            int startY = (screenHeight - cardHeight) / 2;
+
+            for (int i = 0; i < playerState.levelUpOptionCount; i++) {
+                Rectangle bounds = { (float)startX + i * (cardWidth + spacing), (float)startY, (float)cardWidth, (float)cardHeight };
+                if (CheckCollisionPointRec(mousePos, bounds)) {
+                    selection = i;
+                    break;
+                }
+            }
+        }
+
+        if (selection != -1 && selection < playerState.levelUpOptionCount) {
+            WeaponComponent_UpgradeOrAdd(&playerState.weapons, playerState.levelUpOptions[selection].weaponType);
+            playerState.bIsLevelingUp = false;
+            DisableCursor(); // Lock cursor again
+        }
+        return; 
+    }
+
     // Capture Keyboard/Gamepad inputs into the Controller
     PlayerController_Update(&playerController);
 }
 
 void UpdateLogic(float deltaTime)
 {
+    if (playerState.bIsLevelingUp) {
+        return;
+    }
+
     // Update the Hero Character
     PlayerCharacter_Update(&playerCharacter, deltaTime);
 
     // Update Swarm behaviors
     Vector2 playerPos = playerCharacter.base.position;
     EnemySystem_Update(deltaTime, playerPos, &playerState);
-    ProjectileSystem_Update(deltaTime);
+    ProjectileSystem_Update(deltaTime, &playerState);
     PickupSystem_Update(deltaTime, &playerState, playerPos);
 }
 
@@ -96,7 +136,7 @@ void RenderGraphics(void)
     Actor_Render(&playerCharacter.base);
     
     // Render Swarm 
-    SwarmRendererSystem_Draw();
+    SwarmRendererSystem_Draw(playerCharacter.base.position, &playerState);
     
     // Render Fore Picking items (magnetized ones)
     PickupSystem_DrawForeground();
@@ -104,6 +144,10 @@ void RenderGraphics(void)
     EndMode2D();
     
     HUDSystem_Draw(&playerState);
+    
+    if (playerState.bIsLevelingUp) {
+        HUDSystem_DrawLevelUp(&playerState);
+    }
     
     EndDrawing();
 }

@@ -15,7 +15,7 @@ bool XPComponent_AddExperience(XPComponent* comp, int amount) {
     if (comp->currentXP >= comp->xpToNextLevel) {
         comp->currentLevel++;
         comp->currentXP -= comp->xpToNextLevel; // Carry over
-        comp->xpToNextLevel = (int)(comp->xpToNextLevel * 1.5f); // Increase requirement
+        comp->xpToNextLevel = (int)(comp->xpToNextLevel * 1.8f); // Increase requirement
         return true;
     }
     

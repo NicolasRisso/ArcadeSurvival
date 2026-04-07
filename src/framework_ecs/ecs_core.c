@@ -22,6 +22,11 @@ Color projectile_colors[MAX_PROJECTILES];
 float projectile_sizes[MAX_PROJECTILES];
 int projectile_damage[MAX_PROJECTILES];
 int projectile_penetrations[MAX_PROJECTILES];
+int projectile_damageCaps[MAX_PROJECTILES];
+int projectile_damageDealt[MAX_PROJECTILES];
+float projectile_timers[MAX_PROJECTILES];
+float projectile_specialTimers[MAX_PROJECTILES];
+ProjectileType projectile_types[MAX_PROJECTILES];
 unsigned char projectile_hitMasks[MAX_PROJECTILES][125];
 
 // --- PICKUP ECS ARRAYS ---
@@ -42,6 +47,11 @@ void ECS_Init(void) {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         projectile_bIsActive[i] = false;
         projectile_sizes[i] = 5.0f;
+        projectile_timers[i] = 0.0f;
+        projectile_specialTimers[i] = 0.0f;
+        projectile_damageCaps[i] = 0;
+        projectile_damageDealt[i] = 0;
+        projectile_types[i] = PROJ_NORMAL;
         memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
     }
     for (int i = 0; i < MAX_PICKUPS; i++) {
@@ -77,6 +87,10 @@ void ECS_DestroyEnemy(int entityId) {
 }
 
 int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int damage, int penetrations) {
+    return ECS_SpawnProjectileEx(pos, vel, col, size, damage, penetrations, PROJ_NORMAL, 0.0f, 2147483647); // INT_MAX
+}
+
+int ECS_SpawnProjectileEx(Vector2 pos, Vector2 vel, Color col, float size, int damage, int penetrations, ProjectileType type, float timer, int damageCap) {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (!projectile_bIsActive[i]) {
             projectile_positions[i] = pos;
@@ -85,6 +99,11 @@ int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int dam
             projectile_sizes[i] = size;
             projectile_damage[i] = damage;
             projectile_penetrations[i] = penetrations;
+            projectile_damageCaps[i] = damageCap;
+            projectile_damageDealt[i] = 0;
+            projectile_types[i] = type;
+            projectile_timers[i] = timer;
+            projectile_specialTimers[i] = 0.0f;
             memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
             projectile_bIsActive[i] = true;
             return i;

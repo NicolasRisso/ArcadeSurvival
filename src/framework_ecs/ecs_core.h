@@ -19,6 +19,14 @@ typedef enum {
     PICKUP_MAGNET
 } PickupType;
 
+typedef enum {
+    PROJ_NORMAL,
+    PROJ_FIREBALL,
+    PROJ_BOMB,
+    PROJ_SPIKE,
+    PROJ_EXPLOSION // Area damage that exists for 1 frame or a short duration
+} ProjectileType;
+
 // --- ENEMY ECS ARRAYS ---
 extern bool enemy_bIsActive[MAX_ENEMIES];
 extern Vector2 enemy_positions[MAX_ENEMIES];
@@ -40,6 +48,11 @@ extern Color projectile_colors[MAX_PROJECTILES];
 extern float projectile_sizes[MAX_PROJECTILES];
 extern int projectile_damage[MAX_PROJECTILES];
 extern int projectile_penetrations[MAX_PROJECTILES];
+extern int projectile_damageCaps[MAX_PROJECTILES];
+extern int projectile_damageDealt[MAX_PROJECTILES];
+extern float projectile_timers[MAX_PROJECTILES]; // Use for life timer, detonation, etc.
+extern float projectile_specialTimers[MAX_PROJECTILES]; // Use for tick rates (spikes)
+extern ProjectileType projectile_types[MAX_PROJECTILES];
 extern unsigned char projectile_hitMasks[MAX_PROJECTILES][125]; // (MAX_ENEMIES + 7) / 8
 
 // --- PICKUP ECS ARRAYS ---
@@ -58,6 +71,7 @@ int ECS_SpawnEnemy(Vector2 pos, Color col, float size, int health, float maxSpee
 void ECS_DestroyEnemy(int entityId);
 
 int ECS_SpawnProjectile(Vector2 pos, Vector2 vel, Color col, float size, int damage, int penetrations);
+int ECS_SpawnProjectileEx(Vector2 pos, Vector2 vel, Color col, float size, int damage, int penetrations, ProjectileType type, float timer, int damageCap);
 void ECS_DestroyProjectile(int entityId);
 
 int ECS_SpawnPickup(Vector2 pos, PickupType type, int value);
