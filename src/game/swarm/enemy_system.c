@@ -118,8 +118,19 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerS
     g_SpawnRate = 1.5f - (minutes * 0.25f);
     if (g_SpawnRate < 0.2f) g_SpawnRate = 0.2f;
 
-    // 1. Weighted Random Spawning Logic
-    g_SpawnTimer += deltaTime;
+    // 1. Catch-up Mechanic: If count < 100 after 30s, spawn 150% faster
+    int aliveCount = 0;
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemy_bIsActive[i]) aliveCount++;
+    }
+    
+    float spawnSpeedMultiplier = 1.0f;
+    if (playerState->gameTime > 30.0f && aliveCount < 100) {
+        spawnSpeedMultiplier = 1.5f; 
+    }
+
+    // 2. Weighted Random Spawning Logic
+    g_SpawnTimer += deltaTime * spawnSpeedMultiplier;
     if (g_SpawnTimer >= g_SpawnRate) {
         g_SpawnTimer = 0;
         

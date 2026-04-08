@@ -79,12 +79,45 @@ void HUDSystem_Draw(PlayerState* state) {
 #include "game/systems/combat/weapon_data.h"
 #include "game/systems/relics/relic_data.h"
 
+static void DrawTextWrapped(const char* text, Vector2 pos, float maxWidth, int fontSize, Color color) {
+    float spacing = 2.0f;
+    Font font = GetFontDefault();
+    
+    char buffer[512];
+    strcpy(buffer, text);
+    
+    char* words[64];
+    int wordCount = 0;
+    
+    char* word = strtok(buffer, " \n");
+    while (word != NULL && wordCount < 64) {
+        words[wordCount++] = word;
+        word = strtok(NULL, " \n");
+    }
+    
+    float cursorX = 0;
+    float cursorY = 0;
+    float spaceWidth = MeasureTextEx(font, " ", (float)fontSize, spacing).x;
+    
+    for (int i = 0; i < wordCount; i++) {
+        Vector2 size = MeasureTextEx(font, words[i], (float)fontSize, spacing);
+        
+        if (cursorX + size.x > maxWidth && cursorX > 0) {
+            cursorX = 0;
+            cursorY += (float)fontSize + 2;
+        }
+        
+        DrawTextEx(font, words[i], (Vector2){pos.x + cursorX, pos.y + cursorY}, (float)fontSize, spacing, color);
+        cursorX += size.x + spaceWidth;
+    }
+}
+
 static void DrawCard(Rectangle bounds, LevelUpOption option, bool isHovered) {
     DrawRectangleRec(bounds, isHovered ? LIGHTGRAY : GRAY);
     DrawRectangleLinesEx(bounds, 3, isHovered ? YELLOW : BLACK);
     
     const char* name = "";
-    char desc[256];
+    char desc[512]; // Increased buffer slightly
 
     if (option.type == OPTION_WEAPON) {
         name = GetWeaponName(option.weaponType);
@@ -105,7 +138,8 @@ static void DrawCard(Rectangle bounds, LevelUpOption option, bool isHovered) {
         DrawText(lvBuf, (int)bounds.x + 10, (int)bounds.y + 40, 20, DARKGREEN);
     }
     
-    DrawTextEx(GetFontDefault(), desc, (Vector2){bounds.x + 10, bounds.y + 80}, 18, 1, DARKGRAY);
+    // Draw wrapped description
+    DrawTextWrapped(desc, (Vector2){bounds.x + 10, bounds.y + 80}, bounds.width - 20, 18, DARKGRAY);
 }
 
 void HUDSystem_DrawLevelUp(PlayerState* state) {
