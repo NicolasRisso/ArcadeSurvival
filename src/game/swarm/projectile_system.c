@@ -14,9 +14,9 @@ static void SpawnExplosion(Vector2 pos, float radius, int damage) {
 
 void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
     if (!state) return;
-    // XP scales by 20% every 30 seconds
+    // XP scales by 25% every 30 seconds
     int thirtySecPeriods = (int)(state->gameTime / 30.0f);
-    float xpMultiplier = 1.0f + (thirtySecPeriods * 0.20f);
+    float xpMultiplier = 1.0f + (thirtySecPeriods * 0.25f);
 
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (!projectile_bIsActive[i]) continue;

@@ -101,7 +101,15 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                                     HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
                                 }
                                 if (enemy_healths[e] <= 0) {
-                                    PickupSystem_RollLoot(enemy_positions[e], 10);
+                                    int xpValue = 10;
+                                    if (enemy_types[e] == ENEMY_FAST) xpValue = 25;
+                                    else if (enemy_types[e] == ENEMY_TANK) xpValue = 100;
+
+                                    int thirtySecPeriods = (int)(state->gameTime / 30.0f);
+                                    float xpMultiplier = 1.0f + (thirtySecPeriods * 0.25f);
+                                    xpValue = (int)(xpValue * xpMultiplier);
+
+                                    PickupSystem_RollLoot(enemy_positions[e], xpValue);
                                     ECS_DestroyEnemy(e);
                                 }
                             }

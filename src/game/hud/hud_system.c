@@ -1,11 +1,14 @@
 #include "game/hud/hud_system.h"
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
+#include <string.h>
 
 void HUDSystem_Draw(PlayerState* state) {
     if (!state) return;
     
     int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
     int barHeight = 20;
     
     float xpRatio = (float)state->xp.currentXP / (float)state->xp.xpToNextLevel;
@@ -73,6 +76,20 @@ void HUDSystem_Draw(PlayerState* state) {
     // STAT NOTIFICATION LOG
     if (state->statNotify.timer > 0) {
         DrawText(state->statNotify.message, screenWidth - MeasureText(state->statNotify.message, 20) - 20, timerY + 35, 20, DARKGREEN);
+    }
+    
+    // SWARM WARNING
+    float swarmCycle = fmodf(state->gameTime, 120.0f);
+    if (state->gameTime > 110.0f && swarmCycle >= 115.0f && swarmCycle < 120.0f) {
+        const char* warning = "SWARM INCOMING";
+        int fontSize = 50;
+        int tWidth = MeasureText(warning, fontSize);
+        
+        // Flickering effect
+        float alpha = (sinf(state->gameTime * 12.0f) * 0.5f + 0.5f);
+        Color warnCol = (Color){ 255, 0, 0, (unsigned char)(alpha * 255) };
+        
+        DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 - 50, fontSize, warnCol);
     }
 }
 

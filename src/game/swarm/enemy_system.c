@@ -125,11 +125,18 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos, PlayerState* playerS
     }
     
     float spawnSpeedMultiplier = 1.0f;
-    if (playerState->gameTime > 30.0f && aliveCount < 100) {
+    
+    // 1. Swarm Event Logic (Every 2 minutes, lasts 20s, increase speed by 400%)
+    float cycleTime = fmodf(playerState->gameTime, 120.0f);
+    bool bIsSwarming = (playerState->gameTime >= 120.0f && cycleTime < 20.0f);
+    if (bIsSwarming) {
+        spawnSpeedMultiplier = 5.0f; // Increase by 400% = 5x speed
+    } else if (playerState->gameTime > 30.0f && aliveCount < 100) {
+        // 2. Catch-up Mechanic: If count < 100 after 30s, spawn 150% faster
         spawnSpeedMultiplier = 1.5f; 
     }
 
-    // 2. Weighted Random Spawning Logic
+    // 3. Weighted Random Spawning Logic
     g_SpawnTimer += deltaTime * spawnSpeedMultiplier;
     if (g_SpawnTimer >= g_SpawnRate) {
         g_SpawnTimer = 0;
