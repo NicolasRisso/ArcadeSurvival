@@ -66,18 +66,33 @@ void HUDSystem_Draw(PlayerState* state) {
     char timeBuf[16];
     sprintf(timeBuf, "%02d:%02d", minutes, seconds);
     int timeTextWidth = MeasureText(timeBuf, 25);
-    DrawText(timeBuf, screenWidth - timeTextWidth - 20, barHeight + 35, 25, BLACK);
+    int timerX = screenWidth - timeTextWidth - 20;
+    int timerY = barHeight + 35;
+    DrawText(timeBuf, timerX, timerY, 25, BLACK);
+
+    // STAT NOTIFICATION LOG
+    if (state->statNotify.timer > 0) {
+        DrawText(state->statNotify.message, screenWidth - MeasureText(state->statNotify.message, 20) - 20, timerY + 35, 20, DARKGREEN);
+    }
 }
 
 #include "game/systems/combat/weapon_data.h"
+#include "game/systems/relics/relic_data.h"
 
 static void DrawCard(Rectangle bounds, LevelUpOption option, bool isHovered) {
     DrawRectangleRec(bounds, isHovered ? LIGHTGRAY : GRAY);
     DrawRectangleLinesEx(bounds, 3, isHovered ? YELLOW : BLACK);
     
-    const char* name = GetWeaponName(option.weaponType);
+    const char* name = "";
     char desc[256];
-    GetWeaponDescription(option.weaponType, option.currentLevel, desc);
+
+    if (option.type == OPTION_WEAPON) {
+        name = GetWeaponName(option.weaponType);
+        GetWeaponDescription(option.weaponType, option.currentLevel, desc);
+    } else {
+        name = GetRelicName(option.relicType);
+        GetRelicDescription(option.relicType, option.currentLevel, desc);
+    }
     
     int titleSize = 25;
     DrawText(name, (int)bounds.x + 10, (int)bounds.y + 10, titleSize, BLACK);

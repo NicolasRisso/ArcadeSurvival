@@ -14,10 +14,22 @@ for /R src %%f in (*.c) do (
 
 echo Building %PROJECT_NAME%...
 
+:: Check for local Raylib binaries
+set "RAYLIB_INCLUDES=-Iraylib/include"
+set "RAYLIB_LIBS=-Lraylib/lib -lraylib"
+
+if not exist raylib\lib\libraylib.a (
+    if not exist raylib\lib\raylib.lib (
+        echo [INFO] Local Raylib binaries not found at raylib/lib.
+        echo [INFO] Attempting to use system-installed Raylib...
+        set "RAYLIB_INCLUDES="
+        set "RAYLIB_LIBS=-lraylib"
+    )
+)
+
 %COMPILER% !SOURCE_FILES! -o %OUT_DIR%/%PROJECT_NAME%.exe ^
-    -Iraylib/include -Isrc ^
-    -Lraylib/lib ^
-    -lraylib ^
+    -Isrc %RAYLIB_INCLUDES% ^
+    %RAYLIB_LIBS% ^
     -lgdi32 ^
     -lwinmm
 

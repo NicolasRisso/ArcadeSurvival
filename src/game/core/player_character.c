@@ -17,7 +17,7 @@ void PlayerCharacter_Init(PlayerCharacter* character, int id, Vector2 spawnPos, 
     Actor_AddComponent(&character->base, (Component*)&character->spriteComp);
 
     // Initializing movement component
-    MovementComponent_Init(&character->movementComp, &character->base, controller, 330.0f);
+    MovementComponent_Init(&character->movementComp, &character->base, controller, state, 330.0f);
     Actor_AddComponent(&character->base, (Component*)&character->movementComp);
 }
 

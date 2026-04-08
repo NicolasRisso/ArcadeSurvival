@@ -1,4 +1,5 @@
 #include "game/player/movement/movement_component.h"
+#include "game/core/player_state.h"
 
 // Internal virtual function override mapping
 static void MovementComponent_Update(Component* self, float deltaTime) {
@@ -7,9 +8,14 @@ static void MovementComponent_Update(Component* self, float deltaTime) {
     MovementComponent* movementComp = (MovementComponent*)self;
     
     if (movementComp->controller) {
+        float speed = movementComp->moveSpeed;
+        if (movementComp->state) {
+            speed *= movementComp->state->stats.movementMultiplier;
+        }
+
         Vector2 velocity = { 
-            movementComp->controller->moveInput.x * movementComp->moveSpeed * deltaTime,
-            movementComp->controller->moveInput.y * movementComp->moveSpeed * deltaTime
+            movementComp->controller->moveInput.x * speed * deltaTime,
+            movementComp->controller->moveInput.y * speed * deltaTime
         };
         
         self->owner->position.x += velocity.x;
@@ -17,7 +23,7 @@ static void MovementComponent_Update(Component* self, float deltaTime) {
     }
 }
 
-void MovementComponent_Init(MovementComponent* movementComp, Actor* owner, PlayerController* controller, float moveSpeed) {
+void MovementComponent_Init(MovementComponent* movementComp, Actor* owner, PlayerController* controller, PlayerState* state, float moveSpeed) {
     if (!movementComp || !owner) return;
     
     // Initialize base Component (Assuming COMP_MOVEMENT is available in enum)
@@ -28,5 +34,6 @@ void MovementComponent_Init(MovementComponent* movementComp, Actor* owner, Playe
     
     // Setup specific MovementComponent variables
     movementComp->controller = controller;
+    movementComp->state = state;
     movementComp->moveSpeed = moveSpeed;
 }

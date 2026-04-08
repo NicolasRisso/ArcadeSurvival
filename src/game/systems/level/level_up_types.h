@@ -2,17 +2,20 @@
 #define LEVEL_UP_TYPES_H
 
 #include "game/systems/combat/weapon_types.h"
+#include "game/systems/relics/relic_types.h"
 
 typedef enum {
     OPTION_WEAPON,
-    OPTION_RELIC // Placeholder for future relics
+    OPTION_RELIC
 } LevelUpOptionType;
 
 typedef struct {
     LevelUpOptionType type;
-    WeaponType weaponType;
+    union {
+        WeaponType weaponType;
+        RelicType relicType;
+    };
     int currentLevel;
-    // Future relic fields could go here
 } LevelUpOption;
 
 #endif // LEVEL_UP_TYPES_H

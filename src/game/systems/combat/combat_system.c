@@ -17,7 +17,12 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
         if (!stats) continue;
 
         float realFireRate = (g_DoubleTroubleTimer > 0.0f) ? stats->fireRate * 0.5f : stats->fireRate;
+        realFireRate *= (1.0f / state->stats.attackSpeedMultiplier);
+
         int realDamage = (g_DoubleTroubleTimer > 0.0f) ? stats->damage * 2 : stats->damage;
+        realDamage = (int)(realDamage * state->stats.damageMultiplier);
+
+        float realSize = state->stats.sizeMultiplier;
 
         w->cooldownTimer -= deltaTime;
 
@@ -38,10 +43,15 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                             // Subtle offset for multiple projectiles
                             float angle = angleBase + (j - (perAxis-1)*0.5f) * 0.1f;
                             Vector2 dir = { cosf(angle), sinf(angle) };
-                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 300.0f), ORANGE, 8.0f, realDamage, stats->penetration, PROJ_FIREBALL, stats->specialValue, stats->damageCap);
+                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 300.0f), ORANGE, 8.0f * realSize, realDamage, stats->penetration, PROJ_FIREBALL, stats->specialValue, stats->damageCap);
                         }
                     }
                     fired = true;
+                    // LifeSteal
+                    if (state->stats.lifeSteal > 0.0f && realDamage > 0) {
+                        float heal = realDamage * state->stats.lifeSteal * stats->projectileCount; // Approximated
+                        HealthComponent_Heal(&state->health, (int)heal);
+                    }
                     break;
                 }
 
@@ -62,9 +72,13 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                         for (int j = 0; j < stats->projectileCount; j++) {
                             float spread = (j - (stats->projectileCount-1)*0.5f) * 0.2f;
                             Vector2 dir = Vector2Rotate(baseDir, spread);
-                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 450.0f), BLUE, 5.0f, realDamage, stats->penetration, PROJ_NORMAL, 0.0f, stats->damageCap);
+                            ECS_SpawnProjectileEx(playerPos, Vector2Scale(dir, 450.0f), BLUE, 5.0f * realSize, realDamage, stats->penetration, PROJ_NORMAL, 0.0f, stats->damageCap);
                         }
                         fired = true;
+                        // LifeSteal
+                        if (state->stats.lifeSteal > 0.0f) {
+                            HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal * stats->projectileCount));
+                        }
                     }
                     break;
                 }
@@ -74,9 +88,12 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                     // We can just use the existing loop and apply damage to all enemies in range
                     for (int e = 0; e < MAX_ENEMIES; e++) {
                         if (enemy_bIsActive[e]) {
-                            if (Vector2Distance(playerPos, enemy_positions[e]) < stats->range) {
+                            if (Vector2Distance(playerPos, enemy_positions[e]) < stats->range * realSize) {
                                 enemy_healths[e] -= realDamage;
                                 enemy_damageFlashes[e] = 0.1f;
+                                if (state->stats.lifeSteal > 0.0f) {
+                                    HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
+                                }
                                 if (enemy_healths[e] <= 0) {
                                     ECS_SpawnPickup(enemy_positions[e], PICKUP_XP_GEM, 10);
                                     ECS_DestroyEnemy(e);
@@ -90,8 +107,11 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
 
                 case WEAPON_BOMB_SHOES: {
                     // Drops a bomb at feet
-                    ECS_SpawnProjectileEx(playerPos, (Vector2){0,0}, DARKGRAY, 12.0f, realDamage, 1, PROJ_BOMB, stats->specialValue, stats->damageCap);
+                    ECS_SpawnProjectileEx(playerPos, (Vector2){0,0}, DARKGRAY, 12.0f * realSize, realDamage, 1, PROJ_BOMB, stats->specialValue, stats->damageCap);
                     fired = true;
+                    if (state->stats.lifeSteal > 0.0f) {
+                        HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
+                    }
                     break;
                 }
 
@@ -108,8 +128,11 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                         Vector2 targetPos = enemy_positions[targetIdx];
                         // Spawn a spike at feet. Timer is 2s (or 3s at lvl 10+)
                         float lifeTime = (w->level >= 10) ? 3.0f : 2.0f;
-                        ECS_SpawnProjectileEx(targetPos, (Vector2){0,0}, GREEN, 15.0f, realDamage, 999, PROJ_SPIKE, lifeTime, stats->damageCap);
+                        ECS_SpawnProjectileEx(targetPos, (Vector2){0,0}, GREEN, 15.0f * realSize, realDamage, 999, PROJ_SPIKE, lifeTime, stats->damageCap);
                         fired = true;
+                        if (state->stats.lifeSteal > 0.0f) {
+                            HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
+                        }
                     }
                     break;
                 }

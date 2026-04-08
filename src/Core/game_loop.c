@@ -4,6 +4,7 @@
 #include "game/core/player_controller.h"
 #include "game/core/player_state.h"
 #include "game/core/player_character.h"
+#include "game/systems/relics/relic_component.h"
 #include <stdio.h>
 
 #include "framework_ecs/ecs_core.h"
@@ -85,7 +86,13 @@ void ProcessInput(void)
         }
 
         if (selection != -1 && selection < playerState.levelUpOptionCount) {
-            WeaponComponent_UpgradeOrAdd(&playerState.weapons, playerState.levelUpOptions[selection].weaponType);
+            LevelUpOption opt = playerState.levelUpOptions[selection];
+            if (opt.type == OPTION_WEAPON) {
+                WeaponComponent_UpgradeOrAdd(&playerState.weapons, opt.weaponType);
+            } else if (opt.type == OPTION_RELIC) {
+                RelicComponent_UpgradeOrAdd(&playerState.relics, opt.relicType);
+                PlayerState_RecalculateStats(&playerState);
+            }
             playerState.bIsLevelingUp = false;
             DisableCursor(); // Lock cursor again
         }
