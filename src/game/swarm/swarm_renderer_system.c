@@ -13,7 +13,8 @@ void SwarmRendererSystem_Draw(Vector2 playerPos, PlayerState* state) {
             if (state->weapons.weapons[i].type == WEAPON_DEATH_AURA) {
                 const WeaponLevelStats* stats = GetWeaponStats(WEAPON_DEATH_AURA, state->weapons.weapons[i].level);
                 if (stats) {
-                    DrawCircleV(playerPos, stats->range, (Color){ 0, 0, 0, 80 }); // Black transparent
+                    float auraSize = stats->range * state->stats.sizeMultiplier;
+                    DrawCircleV(playerPos, auraSize, (Color){ 0, 0, 0, 80 }); // Black transparent
                 }
             }
         }

@@ -7,12 +7,12 @@
 
 static inline const char* GetRelicName(RelicType type) {
     switch (type) {
-        case RELIC_HEART:     return "Vitality Heart";
-        case RELIC_SWORD:     return "Power Sword";
-        case RELIC_HOURGLASS: return "Chrono Hourglass";
-        case RELIC_LENS:      return "Magnifying Lens";
-        case RELIC_BOOTS:     return "Swift Boots";
-        case RELIC_FANG:      return "Vampire Fang";
+        case RELIC_HEART:     return "Health Relic";
+        case RELIC_SWORD:     return "Damage Relic";
+        case RELIC_HOURGLASS: return "AttackSpeed Relic";
+        case RELIC_LENS:      return "Size Relic";
+        case RELIC_BOOTS:     return "Speed Relic";
+        case RELIC_FANG:      return "LifeSteal Relic";
         default: return "Unknown Relic";
     }
 }

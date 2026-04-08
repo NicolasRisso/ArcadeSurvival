@@ -1,5 +1,7 @@
 #include "game/systems/combat/combat_system.h"
 #include "game/systems/combat/weapon_data.h"
+#include "game/swarm/pickup_system.h"
+#include "game/hud/popup_system.h"
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
 #include <float.h>
@@ -91,11 +93,12 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                             if (Vector2Distance(playerPos, enemy_positions[e]) < stats->range * realSize) {
                                 enemy_healths[e] -= realDamage;
                                 enemy_damageFlashes[e] = 0.1f;
+                                PopupSystem_Add(enemy_positions[e], realDamage);
                                 if (state->stats.lifeSteal > 0.0f) {
                                     HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
                                 }
                                 if (enemy_healths[e] <= 0) {
-                                    ECS_SpawnPickup(enemy_positions[e], PICKUP_XP_GEM, 10);
+                                    PickupSystem_RollLoot(enemy_positions[e], 10);
                                     ECS_DestroyEnemy(e);
                                 }
                             }

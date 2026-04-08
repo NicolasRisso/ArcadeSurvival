@@ -1,4 +1,6 @@
 #include "game/swarm/projectile_system.h"
+#include "game/swarm/pickup_system.h"
+#include "game/hud/popup_system.h"
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
 #include <string.h>
@@ -63,6 +65,7 @@ void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
                 if (projectile_types[i] != PROJ_BOMB) {
                     enemy_healths[j] -= projectile_damage[i];
                     enemy_damageFlashes[j] = 0.1f;
+                    PopupSystem_Add(enemy_positions[j], projectile_damage[i]);
                     projectile_damageDealt[i] += projectile_damage[i];
                 }
 
@@ -79,7 +82,7 @@ void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
                     // Apply time scaling
                     xpValue = (int)(xpValue * xpMultiplier);
                     
-                    ECS_SpawnPickup(enemy_positions[j], PICKUP_XP_GEM, xpValue);
+                    PickupSystem_RollLoot(enemy_positions[j], xpValue);
                     ECS_DestroyEnemy(j);
                 }
 

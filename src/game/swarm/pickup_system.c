@@ -16,7 +16,8 @@ static void TriggerMagnet(void) {
 static void TriggerNuke(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
-            // Kill instantly 
+            // Kill instantly and drop loot
+            PickupSystem_RollLoot(enemy_positions[i], 10);
             ECS_DestroyEnemy(i);
         }
     }
@@ -101,6 +102,21 @@ void PickupSystem_DrawBackground(void) {
             DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 
                            (Vector2){ size, size }, col);
         }
+    }
+}
+
+void PickupSystem_RollLoot(Vector2 pos, int baseXP) {
+    // 1. Always spawn XP gem
+    ECS_SpawnPickup(pos, PICKUP_XP_GEM, baseXP);
+
+    // 2. Roll for powerup (0.75% chance)
+    // GetRandomValue(0, 10000) allows for 0.01% precision
+    // 0.75% is 75 in 10000
+    if (GetRandomValue(0, 10000) <= 75) {
+        // Pick a random powerup among the 4 available:
+        // PICKUP_NUKE (1), PICKUP_TIME_FREEZE (2), PICKUP_DOUBLE_TROUBLE (3), PICKUP_MAGNET (4)
+        PickupType pType = (PickupType)GetRandomValue(1, 4);
+        ECS_SpawnPickup(pos, pType, 1);
     }
 }
 

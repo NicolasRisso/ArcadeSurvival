@@ -9,6 +9,7 @@ extern float g_TimeFreezeTimer;
 extern float g_DoubleTroubleTimer;
 
 void PickupSystem_Update(float deltaTime, PlayerState* playerState, Vector2 playerPos);
+void PickupSystem_RollLoot(Vector2 pos, int baseXP);
 void PickupSystem_DrawBackground(void);
 void PickupSystem_DrawForeground(void); // To render the pickups
 

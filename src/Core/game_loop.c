@@ -12,6 +12,7 @@
 #include "game/swarm/enemy_system.h"
 #include "game/swarm/projectile_system.h"
 #include "game/swarm/pickup_system.h"
+#include "game/hud/popup_system.h"
 #include "game/hud/hud_system.h"
 
 // --- Global variables for Testing ---
@@ -53,6 +54,7 @@ void InitGame(void)
     // Initialize ECS and spawn initial swarm tests
     ECS_Init();
     EnemySystem_Init(spawnPoint);
+    PopupSystem_Init();
 }
 
 void ProcessInput(void)
@@ -117,6 +119,7 @@ void UpdateLogic(float deltaTime)
     EnemySystem_Update(deltaTime, playerPos, &playerState);
     ProjectileSystem_Update(deltaTime, &playerState);
     PickupSystem_Update(deltaTime, &playerState, playerPos);
+    PopupSystem_Update(deltaTime);
 }
 
 void RenderGraphics(void)
@@ -148,6 +151,8 @@ void RenderGraphics(void)
     // Render Fore Picking items (magnetized ones)
     PickupSystem_DrawForeground();
     
+    PopupSystem_Draw();
+
     EndMode2D();
     
     HUDSystem_Draw(&playerState);
