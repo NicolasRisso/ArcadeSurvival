@@ -43,18 +43,18 @@ void EnemySystem_TriggerPreset(Vector2 playerPos, EnemySpawnPreset preset, int m
     float baseSpeed = 150.0f;
     int health = 15;
     int damage = 7;
-    float size = 20.0f;
+    float size = 26.0f; // Increased from 20 to differenciate from fast ones
     
     // Scale stats based on minutes passed
     float hpMultiplier = 1.0f + (minutes * 0.35f);
     float dmgMultiplier = 1.0f + (minutes * 0.10f);
     
     if (preset.enemyType == ENEMY_FAST) {
-        enemyColor = ORANGE;
+        enemyColor = GOLD; // More distinct orange/yellow
         baseSpeed = 250.0f;
         health = 5;
         damage = 3;
-        size = 15.0f;
+        size = 18.0f; // Slightly increased as well to match scaling
     }
     if (preset.enemyType == ENEMY_TANK) {
         enemyColor = DARKPURPLE;

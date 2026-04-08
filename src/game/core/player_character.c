@@ -1,5 +1,6 @@
 #include "game/core/player_character.h"
 #include "game/systems/combat/combat_system.h"
+#include "graphics/resource_manager.h"
 
 void PlayerCharacter_Init(PlayerCharacter* character, int id, Vector2 spawnPos, PlayerController* controller, PlayerState* state) {
     if (!character) return;
@@ -12,8 +13,15 @@ void PlayerCharacter_Init(PlayerCharacter* character, int id, Vector2 spawnPos, 
     character->state = state;
     
     // 3. Init and Attach Components
-    // Giving the player a blue square for now
-    SpriteComponent_Init(&character->spriteComp, &character->base, BLUE, 40.0f, 40.0f);
+    SpriteComponent_Init(&character->spriteComp, &character->base, WHITE, 48.0f, 48.0f);
+    
+    // Load Player Texture
+    character->spriteComp.texture = Resources_GetTexture(TEX_PLAYER);
+    if (character->spriteComp.texture.id > 0) {
+        // Player has a 3-frame walk cycle
+        SpriteComponent_SetAnimation(&character->spriteComp, 3, 8.0f);
+    }
+
     Actor_AddComponent(&character->base, (Component*)&character->spriteComp);
 
     // Initializing movement component
@@ -32,6 +40,13 @@ void PlayerCharacter_Update(PlayerCharacter* character, float deltaTime) {
     
     // Call base Actor update to process any components attached
     Actor_Update(&character->base, deltaTime);
+
+    // Set Sprite Flip based on movement direction
+    if (character->controller->moveInput.x < 0) {
+        character->spriteComp.flipX = true;
+    } else if (character->controller->moveInput.x > 0) {
+        character->spriteComp.flipX = false;
+    }
     
     // Clamp to map borders (-5000, -5000) to (5000, 5000)
     if (character->base.position.x < -5000.0f) character->base.position.x = -5000.0f;
@@ -43,12 +58,12 @@ void PlayerCharacter_Update(PlayerCharacter* character, float deltaTime) {
     if (character->state->damageFlashTimer > 0.0f) {
         // Oscillate every 0.1s (0.05s on, 0.05s off)
         if (((int)(character->state->damageFlashTimer * 20)) % 2 == 0) {
-            character->spriteComp.tint = WHITE;
+            character->spriteComp.tint = RED; // Flash Red
         } else {
-            character->spriteComp.tint = BLUE;
+            character->spriteComp.tint = WHITE;
         }
     } else {
-        character->spriteComp.tint = BLUE;
+        character->spriteComp.tint = WHITE; // Normal colors
     }
     
     // Handle combat (auto-firing)

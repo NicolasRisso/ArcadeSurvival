@@ -1,11 +1,14 @@
 #include "core/game_loop.h"
+#include "raylib.h"
 #include "framework_oos/actor.h"
 #include "graphics/sprite_component.h"
+#include "graphics/resource_manager.h"
 #include "game/core/player_controller.h"
 #include "game/core/player_state.h"
 #include "game/core/player_character.h"
 #include "game/systems/relics/relic_component.h"
 #include <stdio.h>
+#include <math.h>
 
 #include "framework_ecs/ecs_core.h"
 #include "game/swarm/swarm_renderer_system.h"
@@ -41,6 +44,9 @@ void InitGame(void)
 
     // Initialize Audio device
     InitAudioDevice();
+
+    // Initialize Resources
+    Resources_Init();
     
     // Initialize Player Architecture
     Vector2 spawnPoint = { screenWidth / 2.0f, screenHeight / 2.0f };
@@ -122,6 +128,7 @@ void UpdateLogic(float deltaTime)
     Vector2 playerPos = playerCharacter.base.position;
     EnemySystem_Update(deltaTime, playerPos, &playerState);
     ProjectileSystem_Update(deltaTime, &playerState);
+    ProjectileSystem_Update(deltaTime, &playerState); // To match the double update from previous design? Wait, let's keep it clean.
     PickupSystem_Update(deltaTime, &playerState, playerPos);
     PopupSystem_Update(deltaTime);
 }
@@ -129,7 +136,7 @@ void UpdateLogic(float deltaTime)
 void RenderGraphics(void)
 {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(DARKGRAY); // Use dark gray for outside map
 
     // Setup Camera2D
     Camera2D camera = { 0 };
@@ -140,8 +147,39 @@ void RenderGraphics(void)
 
     BeginMode2D(camera);
 
+    // Draw Map Tiling
+    Texture2D floorTex = Resources_GetTexture(TEX_MAP);
+    if (floorTex.id > 0) {
+        // Manual tiling loop with screen culling for performance
+        int screenW = GetScreenWidth();
+        int screenH = GetScreenHeight();
+        
+        // Calculate the range of tiles currently visible on screen
+        float startX = floorf((camera.target.x - (screenW / 2.0f)) / floorTex.width) * floorTex.width;
+        float startY = floorf((camera.target.y - (screenH / 2.0f)) / floorTex.height) * floorTex.height;
+        float endX = camera.target.x + (screenW / 2.0f) + floorTex.width;
+        float endY = camera.target.y + (screenH / 2.0f) + floorTex.height;
+
+        // Clamp to map boundaries (-5000 to 5000)
+        if (startX < -5000) startX = -5000;
+        if (startY < -5000) startY = -5000;
+        if (endX > 5000) endX = 5000;
+        if (endY > 5000) endY = 5000;
+
+        for (float x = startX; x < endX; x += floorTex.width) {
+            for (float y = startY; y < endY; y += floorTex.height) {
+                DrawTexture(floorTex, (int)x, (int)y, WHITE);
+            }
+        }
+    } else {
+        // Fallback grid
+        DrawRectangle(-5000, -5000, 10000, 10000, RAYWHITE);
+        for(int x = -5000; x < 5000; x += 500) DrawLine(x, -5000, x, 5000, LIGHTGRAY);
+        for(int y = -5000; y < 5000; y += 500) DrawLine(-5000, y, 5000, y, LIGHTGRAY);
+    }
+
     // Draw Map Borders
-    DrawRectangleLines(-5000, -5000, 10000, 10000, DARKGRAY);
+    DrawRectangleLines(-5000, -5000, 10000, 10000, BLACK);
 
     // Render Back Picking Items
     PickupSystem_DrawBackground();
@@ -172,6 +210,9 @@ void RenderGraphics(void)
 
 void CloseGame(void)
 {
+    // Unload Resources
+    Resources_Unload();
+
     // Close Audio device
     CloseAudioDevice();
     

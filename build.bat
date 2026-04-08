@@ -42,6 +42,12 @@ if %ERRORLEVEL% equ 0 (
         copy raylib\raylib.dll %OUT_DIR%\ >nul
         echo Copied raylib.dll to %OUT_DIR%
     )
+    
+    :: Copy assets directory
+    if exist assets (
+        xcopy /E /I /Y assets %OUT_DIR%\assets >nul
+        echo Copied assets to %OUT_DIR%\assets
+    )
 ) else (
     echo Build failed!
 )

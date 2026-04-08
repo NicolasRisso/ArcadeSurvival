@@ -2,11 +2,16 @@
 #include "game/core/player_state.h"
 #include "game/systems/combat/combat_system.h"
 #include "game/systems/combat/weapon_data.h"
+#include "graphics/resource_manager.h"
 #include "framework_ecs/ecs_core.h"
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
 
 void SwarmRendererSystem_Draw(Vector2 playerPos, PlayerState* state) {
+    // Cache textures
+    Texture2D enemyTex = Resources_GetTexture(TEX_ENEMIES);
+
     // 1. Draw Death Aura (Background)
     if (state) {
         for (int i = 0; i < state->weapons.activeWeaponCount; i++) {
@@ -26,13 +31,32 @@ void SwarmRendererSystem_Draw(Vector2 playerPos, PlayerState* state) {
             extern float enemy_damageFlashes[];
             Color finalColor = (enemy_damageFlashes[i] > 0.0f) ? WHITE : enemy_colors[i];
             
-            DrawRectangle(
-                (int)enemy_positions[i].x - (int)enemy_sizes[i]/2, 
-                (int)enemy_positions[i].y - (int)enemy_sizes[i]/2, 
-                (int)enemy_sizes[i], 
-                (int)enemy_sizes[i], 
-                finalColor
-            );
+            // Code Animation: Bobbing up and down
+            float bobOffset = sinf(GetTime() * 5.0f + i) * 8.0f; // i adds a random phase per enemy
+            Vector2 drawPos = { enemy_positions[i].x, enemy_positions[i].y + bobOffset };
+
+            if (enemyTex.id == 0) {
+                // Fallback
+                DrawRectangle(
+                    (int)drawPos.x - (int)enemy_sizes[i]/2, 
+                    (int)drawPos.y - (int)enemy_sizes[i]/2, 
+                    (int)enemy_sizes[i], 
+                    (int)enemy_sizes[i], 
+                    finalColor
+                );
+            } else {
+                // Draw Sprite - Scaled by 1.5x
+                float scaledSize = enemy_sizes[i] * 1.5f;
+                Rectangle source = { 0, 0, (float)enemyTex.width, (float)enemyTex.height };
+                Rectangle dest = { 
+                    drawPos.x, 
+                    drawPos.y, 
+                    scaledSize, 
+                    scaledSize 
+                };
+                Vector2 origin = { scaledSize/2, scaledSize/2 };
+                DrawTexturePro(enemyTex, source, dest, origin, 0.0f, finalColor);
+            }
         }
     }
 
