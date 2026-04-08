@@ -64,7 +64,7 @@ void PopupSystem_Draw(void) {
         Vector2 drawPos = { g_Popups[i].position.x - textSize.x/2, g_Popups[i].position.y - textSize.y/2 };
 
         Color outlineCol = (Color){ 0, 0, 0, alpha };
-        Color textCol = (Color){ 255, 0, 0, alpha };
+        Color textCol = (Color){ 255, 255, 0, alpha }; // Yellow
 
         // Draw shadow/border
         float offset = 2.0f * scale;

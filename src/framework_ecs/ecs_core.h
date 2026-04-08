@@ -16,7 +16,8 @@ typedef enum {
     PICKUP_NUKE,
     PICKUP_TIME_FREEZE,
     PICKUP_DOUBLE_TROUBLE,
-    PICKUP_MAGNET
+    PICKUP_MAGNET,
+    PICKUP_HEALTH
 } PickupType;
 
 typedef enum {

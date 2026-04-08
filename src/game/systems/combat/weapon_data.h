@@ -19,7 +19,7 @@ typedef struct {
 // FIREBALL WAND STATS (Every 8s -> 3s, Damage up, Explosion Range up)
 static const WeaponLevelStats FIREBALL_WAND_LEVELS[MAX_WEAPON_LEVEL + 1] = {
     {0}, // Level 0 (None)
-    {15, 8.0f, 1, 4, 100.0f, 40.0f, 2147483647},  // Level 1
+    {30, 8.0f, 1, 4, 100.0f, 40.0f, 2147483647},  // Level 1 (Buffed from 15)
     {18, 7.5f, 1, 4, 100.0f, 42.0f, 2147483647},  // Level 2
     {21, 7.0f, 1, 4, 100.0f, 44.0f, 2147483647},  // Level 3
     {24, 6.5f, 1, 4, 100.0f, 46.0f, 2147483647},  // Level 4

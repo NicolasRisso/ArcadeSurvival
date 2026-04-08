@@ -49,6 +49,7 @@ typedef struct PlayerState {
     
     float gameTime;
     StatNotification statNotify;
+    bool bShowInventoryOverlay;
 } PlayerState;
 
 void PlayerState_Init(PlayerState* state);

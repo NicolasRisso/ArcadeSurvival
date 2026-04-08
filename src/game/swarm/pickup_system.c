@@ -16,8 +16,7 @@ static void TriggerMagnet(void) {
 static void TriggerNuke(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
-            // Kill instantly and drop loot
-            PickupSystem_RollLoot(enemy_positions[i], 10);
+            // Kill instantly (no loot for nuke kills)
             ECS_DestroyEnemy(i);
         }
     }
@@ -79,6 +78,11 @@ void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                 case PICKUP_MAGNET:
                     TriggerMagnet();
                     break;
+                case PICKUP_HEALTH: {
+                    float healPercent = GetRandomValue(20, 40) / 100.0f;
+                    HealthComponent_Heal(&state->health, (int)(state->health.maxHealth * healPercent));
+                    break;
+                }
             }
             ECS_DestroyPickup(i);
         }
@@ -97,6 +101,7 @@ void PickupSystem_DrawBackground(void) {
                 case PICKUP_TIME_FREEZE:    col = SKYBLUE; size = 12.0f; break;
                 case PICKUP_DOUBLE_TROUBLE: col = ORANGE; size = 12.0f; break;
                 case PICKUP_MAGNET:         col = MAGENTA; size = 12.0f; break;
+                case PICKUP_HEALTH:         col = LIME; size = 10.0f; break;
             }
 
             DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 
@@ -109,14 +114,17 @@ void PickupSystem_RollLoot(Vector2 pos, int baseXP) {
     // 1. Always spawn XP gem
     ECS_SpawnPickup(pos, PICKUP_XP_GEM, baseXP);
 
-    // 2. Roll for powerup (0.75% chance)
-    // GetRandomValue(0, 10000) allows for 0.01% precision
-    // 0.75% is 75 in 10000
-    if (GetRandomValue(0, 10000) <= 75) {
+    // 2. Roll for powerup (1% chance)
+    if (GetRandomValue(0, 10000) <= 100) {
         // Pick a random powerup among the 4 available:
         // PICKUP_NUKE (1), PICKUP_TIME_FREEZE (2), PICKUP_DOUBLE_TROUBLE (3), PICKUP_MAGNET (4)
         PickupType pType = (PickupType)GetRandomValue(1, 4);
         ECS_SpawnPickup(pos, pType, 1);
+    }
+
+    // 3. Roll for health drop (1.5% chance)
+    if (GetRandomValue(0, 10000) <= 150) {
+        ECS_SpawnPickup(pos, PICKUP_HEALTH, 1);
     }
 }
 
@@ -132,6 +140,7 @@ void PickupSystem_DrawForeground(void) {
                 case PICKUP_TIME_FREEZE:    col = SKYBLUE; size = 12.0f; break;
                 case PICKUP_DOUBLE_TROUBLE: col = ORANGE; size = 12.0f; break;
                 case PICKUP_MAGNET:         col = MAGENTA; size = 12.0f; break;
+                case PICKUP_HEALTH:         col = LIME; size = 10.0f; break;
             }
 
             DrawRectangleV((Vector2){ pickup_positions[i].x - size/2, pickup_positions[i].y - size/2 }, 

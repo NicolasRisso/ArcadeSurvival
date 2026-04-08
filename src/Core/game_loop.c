@@ -60,6 +60,7 @@ void InitGame(void)
 void ProcessInput(void)
 {
     if (playerState.bIsLevelingUp) {
+        playerState.bShowInventoryOverlay = false;
         // Selection Input
         int selection = -1;
         if (IsKeyPressed(KEY_ONE)) selection = 0;
@@ -103,6 +104,9 @@ void ProcessInput(void)
 
     // Capture Keyboard/Gamepad inputs into the Controller
     PlayerController_Update(&playerController);
+
+    // Update overlay state
+    playerState.bShowInventoryOverlay = IsKeyDown(KEY_TAB);
 }
 
 void UpdateLogic(float deltaTime)
@@ -160,6 +164,8 @@ void RenderGraphics(void)
     if (playerState.bIsLevelingUp) {
         HUDSystem_DrawLevelUp(&playerState);
     }
+    
+    HUDSystem_DrawInventoryOverlay(&playerState);
     
     EndDrawing();
 }

@@ -140,3 +140,78 @@ void HUDSystem_DrawLevelUp(PlayerState* state) {
         DrawText(hint, (int)bounds.x + cardWidth / 2 - 10, (int)bounds.y + cardHeight + 20, 30, WHITE);
     }
 }
+
+void HUDSystem_DrawInventoryOverlay(PlayerState* state) {
+    if (!state || !state->bShowInventoryOverlay) return;
+
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+
+    // Dim background
+    DrawRectangle(0, 0, screenWidth, screenHeight, (Color){ 0, 0, 0, 200 });
+
+    int fontSize = 28;
+    int spacing = 40;
+    int centerY = screenHeight / 2;
+
+    // --- LEFT COLUMN (EQUIPMENT) ---
+    int leftX = (int)(screenWidth * 0.15f);
+    int y = centerY - 250;
+
+    DrawText("EQUIPMENT", leftX, y, 36, GOLD);
+    y += 60;
+
+    // Weapons
+    for (int i = 0; i < state->weapons.activeWeaponCount; i++) {
+        char buf[128];
+        sprintf(buf, "Lv%d %s", state->weapons.weapons[i].level, GetWeaponName(state->weapons.weapons[i].type));
+        DrawText(buf, leftX, y, fontSize, WHITE);
+        y += spacing;
+    }
+
+    y += 30; // gap
+
+    // Relics
+    for (int i = 0; i < state->relics.activeRelicCount; i++) {
+        char buf[128];
+        sprintf(buf, "Lv%d %s", state->relics.relics[i].level, GetRelicName(state->relics.relics[i].type));
+        DrawText(buf, leftX, y, fontSize, SKYBLUE);
+        y += spacing;
+    }
+
+    // --- RIGHT COLUMN (STATS) ---
+    int rightX = (int)(screenWidth * 0.60f);
+    y = centerY - 250;
+
+    DrawText("PLAYER ATTRIBUTES", rightX, y, 36, GOLD);
+    y += 60;
+
+    char statText[128];
+
+    // Health
+    sprintf(statText, "Health: %d", state->health.maxHealth);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    // Damage
+    sprintf(statText, "Damage: %.0f%%", state->stats.damageMultiplier * 100.0f);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    // Attack Speed
+    sprintf(statText, "Attack Speed: %.0f%%", state->stats.attackSpeedMultiplier * 100.0f);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    // Size (Area)
+    sprintf(statText, "Size: %.0f%%", state->stats.sizeMultiplier * 100.0f);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    // Movement
+    sprintf(statText, "Movement: %.0f%%", state->stats.movementMultiplier * 100.0f);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    // LifeSteal
+    sprintf(statText, "Life Steal: %.1f%%", state->stats.lifeSteal * 100.0f);
+    DrawText(statText, rightX, y, fontSize, WHITE); y += spacing;
+
+    const char* tabHint = "( Release TAB to close )";
+    DrawText(tabHint, (screenWidth - MeasureText(tabHint, 20)) / 2, screenHeight - 50, 20, GRAY);
+}
