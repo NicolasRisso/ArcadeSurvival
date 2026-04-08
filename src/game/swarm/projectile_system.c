@@ -4,8 +4,11 @@
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
 #include <string.h>
+#include "game/audio/audio_manager.h"
+#include "graphics/resource_manager.h"
 
 static void SpawnExplosion(Vector2 pos, float radius, int damage) {
+    AudioManager_PlaySfx(SND_EXPLOSION);
     ECS_SpawnProjectileEx(pos, (Vector2){0,0}, YELLOW, radius, damage, 999, PROJ_EXPLOSION, 0.1f, 2147483647);
 }
 
@@ -66,6 +69,7 @@ void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
                 if (projectile_types[i] != PROJ_BOMB) {
                     enemy_healths[j] -= projectile_damage[i];
                     enemy_damageFlashes[j] = 0.1f;
+                    AudioManager_PlaySfxThrottled(SND_ENEMY_HIT, 3);
                     PopupSystem_Add(enemy_positions[j], projectile_damage[i]);
                     projectile_damageDealt[i] += projectile_damage[i];
                 }

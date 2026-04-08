@@ -3,6 +3,8 @@
 #include "game/swarm/pickup_system.h"
 #include "game/hud/popup_system.h"
 #include "framework_ecs/ecs_core.h"
+#include "game/audio/audio_manager.h"
+#include "graphics/resource_manager.h"
 #include "raymath.h"
 #include <float.h>
 
@@ -93,6 +95,7 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                             if (Vector2Distance(playerPos, enemy_positions[e]) < stats->range * realSize) {
                                 enemy_healths[e] -= realDamage;
                                 enemy_damageFlashes[e] = 0.1f;
+                                AudioManager_PlaySfxThrottled(SND_ENEMY_HIT, 3);
                                 PopupSystem_Add(enemy_positions[e], realDamage);
                                 if (state->stats.lifeSteal > 0.0f) {
                                     HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));
@@ -109,8 +112,9 @@ void CombatSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
                 }
 
                 case WEAPON_BOMB_SHOES: {
-                    // Drops a bomb at feet
-                    ECS_SpawnProjectileEx(playerPos, (Vector2){0,0}, DARKGRAY, 12.0f * realSize, realDamage, 1, PROJ_BOMB, stats->specialValue, stats->damageCap);
+                    // Drops a bomb at feet. We divide range by 4 because SpawnExplosion multiplies it by 4
+                    float bombSize = (stats->range / 4.0f) * realSize;
+                    ECS_SpawnProjectileEx(playerPos, (Vector2){0,0}, DARKGRAY, bombSize, realDamage, 1, PROJ_BOMB, stats->specialValue, stats->damageCap);
                     fired = true;
                     if (state->stats.lifeSteal > 0.0f) {
                         HealthComponent_Heal(&state->health, (int)(realDamage * state->stats.lifeSteal));

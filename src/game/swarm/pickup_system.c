@@ -1,6 +1,8 @@
 #include "game/swarm/pickup_system.h"
 #include "framework_ecs/ecs_core.h"
 #include "raymath.h"
+#include "game/audio/audio_manager.h"
+#include "graphics/resource_manager.h"
 
 float g_TimeFreezeTimer = 0.0f;
 float g_DoubleTroubleTimer = 0.0f;
@@ -13,10 +15,17 @@ static void TriggerMagnet(void) {
     }
 }
 
+void PickupSystem_RollXPOnly(Vector2 pos, int baseXP) {
+    // Only spawn XP gem, no rolls for powerups or health
+    ECS_SpawnPickup(pos, PICKUP_XP_GEM, baseXP);
+}
+
 static void TriggerNuke(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemy_bIsActive[i]) {
-            // Kill instantly (no loot for nuke kills)
+            // Drop XP only from nuke kills
+            PickupSystem_RollXPOnly(enemy_positions[i], 10);
+            AudioManager_PlaySfx(SND_EXPLOSION);
             ECS_DestroyEnemy(i);
         }
     }
@@ -64,6 +73,7 @@ void PickupSystem_Update(float deltaTime, PlayerState* state, Vector2 playerPos)
         if (distSq <= pickupRadiusSq) {
             switch (pickup_types[i]) {
                 case PICKUP_XP_GEM:
+                    AudioManager_PlaySfx(SND_XP_GAIN);
                     PlayerState_AddExperience(state, pickup_values[i]);
                     break;
                 case PICKUP_NUKE:
@@ -114,16 +124,15 @@ void PickupSystem_RollLoot(Vector2 pos, int baseXP) {
     // 1. Always spawn XP gem
     ECS_SpawnPickup(pos, PICKUP_XP_GEM, baseXP);
 
-    // 2. Roll for powerup (1% chance)
-    if (GetRandomValue(0, 10000) <= 100) {
+    // 2. Roll for powerup (0.6% chance)
+    if (GetRandomValue(0, 10000) <= 60) {
         // Pick a random powerup among the 4 available:
-        // PICKUP_NUKE (1), PICKUP_TIME_FREEZE (2), PICKUP_DOUBLE_TROUBLE (3), PICKUP_MAGNET (4)
         PickupType pType = (PickupType)GetRandomValue(1, 4);
         ECS_SpawnPickup(pos, pType, 1);
     }
 
-    // 3. Roll for health drop (1.5% chance)
-    if (GetRandomValue(0, 10000) <= 150) {
+    // 3. Roll for health drop (1% chance)
+    if (GetRandomValue(0, 10000) <= 100) {
         ECS_SpawnPickup(pos, PICKUP_HEALTH, 1);
     }
 }

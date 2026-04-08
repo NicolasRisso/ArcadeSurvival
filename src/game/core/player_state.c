@@ -1,5 +1,7 @@
 #include "game/core/player_state.h"
 #include "game/systems/combat/weapon_selector.h"
+#include "game/audio/audio_manager.h"
+#include "graphics/resource_manager.h"
 #include "raylib.h"
 #include <stdio.h>
 
@@ -58,6 +60,7 @@ void PlayerState_TakeDamage(PlayerState* state, int amount) {
     
     state->health.currentHealth -= amount;
     state->damageFlashTimer = 0.5f; // 0.5s invulnerability/flash
+    AudioManager_PlaySfx(SND_PLAYER_HIT);
     
     if (state->health.currentHealth < 0) {
         state->health.currentHealth = 0;
@@ -71,6 +74,7 @@ void PlayerState_AddExperience(PlayerState* state, int amount) {
         state->levelUpOptionCount = WeaponSelector_GetRandomOptions(state, state->levelUpOptions);
         if (state->levelUpOptionCount > 0) {
             state->bIsLevelingUp = true;
+            AudioManager_PlaySfx(SND_LEVEL_UP);
             EnableCursor();
             ShowCursor();
         } else {

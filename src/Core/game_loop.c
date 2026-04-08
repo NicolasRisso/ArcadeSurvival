@@ -17,6 +17,7 @@
 #include "game/swarm/pickup_system.h"
 #include "game/hud/popup_system.h"
 #include "game/hud/hud_system.h"
+#include "game/audio/audio_manager.h"
 
 // --- Global variables for Testing ---
 static PlayerController playerController;
@@ -47,6 +48,7 @@ void InitGame(void)
 
     // Initialize Resources
     Resources_Init();
+    AudioManager_Init();
     
     // Initialize Player Architecture
     Vector2 spawnPoint = { screenWidth / 2.0f, screenHeight / 2.0f };
@@ -117,6 +119,7 @@ void ProcessInput(void)
 
 void UpdateLogic(float deltaTime)
 {
+    AudioManager_Update();
     if (playerState.bIsLevelingUp) {
         return;
     }
