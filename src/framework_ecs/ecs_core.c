@@ -27,7 +27,7 @@ int projectile_damageDealt[MAX_PROJECTILES];
 float projectile_timers[MAX_PROJECTILES];
 float projectile_specialTimers[MAX_PROJECTILES];
 ProjectileType projectile_types[MAX_PROJECTILES];
-unsigned char projectile_hitMasks[MAX_PROJECTILES][125];
+unsigned char projectile_hitMasks[MAX_PROJECTILES][HIT_MASK_SIZE];
 
 // --- PICKUP ECS ARRAYS ---
 bool pickup_bIsActive[MAX_PICKUPS];

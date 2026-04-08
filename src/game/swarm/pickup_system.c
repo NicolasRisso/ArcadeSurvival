@@ -22,7 +22,7 @@ void PickupSystem_RollXPOnly(Vector2 pos, int baseXP) {
 
 static void TriggerNuke(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
-        if (enemy_bIsActive[i]) {
+        if (enemy_bIsActive[i] && enemy_types[i] != ENEMY_MINI_BOSS) {
             // Drop XP only from nuke kills
             PickupSystem_RollXPOnly(enemy_positions[i], 10);
             AudioManager_PlaySfx(SND_EXPLOSION);

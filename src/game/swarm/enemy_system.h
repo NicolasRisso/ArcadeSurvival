@@ -19,6 +19,7 @@ typedef struct {
     IntRange countRange;    // Range for how many enemies spawn
     FloatRange distRange;   // Distance range from the player
     EnemyType enemyType;    // Model identifier
+    float difficulty;       // Minimum spawner difficulty to unlock this preset
 } EnemySpawnPreset;
 
 void EnemySystem_Init(Vector2 playerSpawnPos);

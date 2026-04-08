@@ -91,6 +91,19 @@ void HUDSystem_Draw(PlayerState* state) {
         
         DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 - 50, fontSize, warnCol);
     }
+    
+    // MINI BOSS WARNING
+    float bossCycle = fmodf(state->gameTime, 180.0f);
+    if (state->gameTime > 170.0f && bossCycle >= 175.0f && bossCycle < 180.0f) {
+        const char* warning = "MINI BOSS INCOMING";
+        int fontSize = 50;
+        int tWidth = MeasureText(warning, fontSize);
+        
+        float alpha = (sinf(state->gameTime * 12.0f) * 0.5f + 0.5f);
+        Color warnCol = (Color){ 0, 255, 0, (unsigned char)(alpha * 255) }; // Green for Boss
+        
+        DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 + 50, fontSize, warnCol);
+    }
 }
 
 #include "game/systems/combat/weapon_data.h"

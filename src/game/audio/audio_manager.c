@@ -38,8 +38,8 @@ void AudioManager_Update(void) {
 static void PlayInternal(const char* key) {
     Sound snd = Resources_GetSound(key);
     if (snd.frameCount > 0) {
-        // Random Pitch Modulation (+/- 5%)
-        float pitch = 0.95f + ((float)GetRandomValue(0, 10) / 100.0f);
+        // Random Pitch Modulation (+/- 15%) to break repetitive feel
+        float pitch = 0.85f + ((float)GetRandomValue(0, 30) / 100.0f);
         SetSoundPitch(snd, pitch);
         PlaySound(snd);
     }

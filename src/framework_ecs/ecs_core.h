@@ -7,9 +7,10 @@
 
 #define MAX_COMPONENTS 100
 #define MAX_ENTITIES 10000
-#define MAX_ENEMIES 1000
+#define MAX_ENEMIES 2000
 #define MAX_PROJECTILES 1000
 #define MAX_PICKUPS 1000
+#define HIT_MASK_SIZE ((MAX_ENEMIES + 7) / 8)
 
 typedef enum {
     PICKUP_XP_GEM,
@@ -54,7 +55,7 @@ extern int projectile_damageDealt[MAX_PROJECTILES];
 extern float projectile_timers[MAX_PROJECTILES]; // Use for life timer, detonation, etc.
 extern float projectile_specialTimers[MAX_PROJECTILES]; // Use for tick rates (spikes)
 extern ProjectileType projectile_types[MAX_PROJECTILES];
-extern unsigned char projectile_hitMasks[MAX_PROJECTILES][125]; // (MAX_ENEMIES + 7) / 8
+extern unsigned char projectile_hitMasks[MAX_PROJECTILES][HIT_MASK_SIZE];
 
 // --- PICKUP ECS ARRAYS ---
 extern bool pickup_bIsActive[MAX_PICKUPS];

@@ -43,7 +43,7 @@ void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
             projectile_specialTimers[i] -= deltaTime;
             if (projectile_specialTimers[i] <= 0.0f) {
                 // Reset hit mask to allow re-hitting enemies next tick
-                memset(projectile_hitMasks[i], 0, sizeof(projectile_hitMasks[i]));
+                memset(projectile_hitMasks[i], 0, HIT_MASK_SIZE);
                 projectile_specialTimers[i] = 0.2f; // Default tick rate, can be adjusted
             }
         }

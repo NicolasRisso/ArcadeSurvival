@@ -18,7 +18,8 @@ typedef struct {
 typedef enum {
     ENEMY_BASIC,
     ENEMY_FAST,
-    ENEMY_TANK
+    ENEMY_TANK,
+    ENEMY_MINI_BOSS
 } EnemyType;
 
 #endif // GAME_TYPES_H
