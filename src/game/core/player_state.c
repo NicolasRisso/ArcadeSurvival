@@ -29,6 +29,8 @@ void PlayerState_Init(PlayerState* state) {
     PlayerState_RecalculateStats(state);
     
     state->gameTime = 0.0f;
+    state->uiSelectedIndex = 0;
+    state->bossWarningTimer = 0.0f;
     
     // Start with Crystal Shard
     WeaponComponent_UpgradeOrAdd(&state->weapons, WEAPON_CRYSTAL_SHARD);
@@ -74,9 +76,8 @@ void PlayerState_AddExperience(PlayerState* state, int amount) {
         state->levelUpOptionCount = WeaponSelector_GetRandomOptions(state, state->levelUpOptions);
         if (state->levelUpOptionCount > 0) {
             state->bIsLevelingUp = true;
+            state->uiSelectedIndex = 0; // Reset for Nav
             AudioManager_PlaySfx(SND_LEVEL_UP);
-            EnableCursor();
-            ShowCursor();
         } else {
             // Nothing to upgrade! Auto-increase a random stat
             int r = GetRandomValue(0, 5);

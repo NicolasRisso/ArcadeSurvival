@@ -5,6 +5,7 @@
 
 typedef struct {
     Vector2 moveInput;
+    bool bIsUsingGamepad;
 } PlayerController;
 
 void PlayerController_Init(PlayerController* controller);

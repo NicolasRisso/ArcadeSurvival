@@ -67,26 +67,70 @@ void InitGame(void)
 
 void ProcessInput(void)
 {
+    // Stats Overlay (Tab or Gamepad Y - HOLD)
+    bool showOverlay = IsKeyDown(KEY_TAB);
+    if (IsGamepadAvailable(0)) {
+        if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_UP)) showOverlay = true;
+    }
+    playerState.bShowInventoryOverlay = showOverlay;
+
     if (playerState.bIsLevelingUp) {
         playerState.bShowInventoryOverlay = false;
-        // Selection Input
+
+        // Smart Cursor Management during Level Up
+        if (playerController.bIsUsingGamepad) {
+            if (!IsCursorHidden()) HideCursor();
+        } else {
+            if (IsCursorHidden()) {
+                ShowCursor();
+                EnableCursor();
+            }
+        }
+        
+        // Navigation Input (KB & Controller)
+        if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
+            playerState.uiSelectedIndex--;
+            if (playerState.uiSelectedIndex < 0) playerState.uiSelectedIndex = playerState.levelUpOptionCount - 1;
+        }
+        if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
+            playerState.uiSelectedIndex++;
+            if (playerState.uiSelectedIndex >= playerState.levelUpOptionCount) playerState.uiSelectedIndex = 0;
+        }
+
+        // Mouse Hover & Selection
+        int screenWidth = GetScreenWidth();
+        int screenHeight = GetScreenHeight();
+        int cardWidth = 300;
+        int cardHeight = 450;
+        int spacing = 50;
+        int totalWidth = (playerState.levelUpOptionCount * cardWidth) + ((playerState.levelUpOptionCount - 1) * spacing);
+        int startX = (screenWidth - totalWidth) / 2;
+        int startY = (screenHeight - cardHeight) / 2;
+        Vector2 mousePos = GetMousePosition();
+
+        for (int i = 0; i < playerState.levelUpOptionCount; i++) {
+            Rectangle bounds = { (float)startX + i * (cardWidth + spacing), (float)startY, (float)cardWidth, (float)cardHeight };
+            if (CheckCollisionPointRec(mousePos, bounds)) {
+                // If mouse moves, it takes priority and updates the index
+                if (GetMouseDelta().x != 0 || GetMouseDelta().y != 0) {
+                    playerState.uiSelectedIndex = i;
+                }
+            }
+        }
+
+        // Selection Input (Direct keys)
         int selection = -1;
         if (IsKeyPressed(KEY_ONE)) selection = 0;
         if (IsKeyPressed(KEY_TWO)) selection = 1;
         if (IsKeyPressed(KEY_THREE)) selection = 2;
 
-        // Mouse Selection
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Vector2 mousePos = GetMousePosition();
-            int screenWidth = GetScreenWidth();
-            int screenHeight = GetScreenHeight();
-            int cardWidth = 300;
-            int cardHeight = 450;
-            int spacing = 50;
-            int totalWidth = (playerState.levelUpOptionCount * cardWidth) + ((playerState.levelUpOptionCount - 1) * spacing);
-            int startX = (screenWidth - totalWidth) / 2;
-            int startY = (screenHeight - cardHeight) / 2;
+        // Confirmation Input (Enter or Gamepad A)
+        if (IsKeyPressed(KEY_ENTER) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
+            selection = playerState.uiSelectedIndex;
+        }
 
+        // Mouse Click
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             for (int i = 0; i < playerState.levelUpOptionCount; i++) {
                 Rectangle bounds = { (float)startX + i * (cardWidth + spacing), (float)startY, (float)cardWidth, (float)cardHeight };
                 if (CheckCollisionPointRec(mousePos, bounds)) {
@@ -105,16 +149,18 @@ void ProcessInput(void)
                 PlayerState_RecalculateStats(&playerState);
             }
             playerState.bIsLevelingUp = false;
-            DisableCursor(); // Lock cursor again
         }
         return; 
     }
 
+    // Gameplay - Always Hide Cursor
+    if (!IsCursorHidden()) {
+        HideCursor();
+        DisableCursor();
+    }
+
     // Capture Keyboard/Gamepad inputs into the Controller
     PlayerController_Update(&playerController);
-
-    // Update overlay state
-    playerState.bShowInventoryOverlay = IsKeyDown(KEY_TAB);
 }
 
 void UpdateLogic(float deltaTime)
@@ -203,7 +249,7 @@ void RenderGraphics(void)
     HUDSystem_Draw(&playerState);
     
     if (playerState.bIsLevelingUp) {
-        HUDSystem_DrawLevelUp(&playerState);
+        HUDSystem_DrawLevelUp(&playerState, playerController.bIsUsingGamepad);
     }
     
     HUDSystem_DrawInventoryOverlay(&playerState);

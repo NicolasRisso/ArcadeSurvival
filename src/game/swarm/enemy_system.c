@@ -13,7 +13,7 @@ static EnemySpawnPreset g_SpawnPresets[] = {
     {SPAWN_CLUSTER, 10.0f, {20, 40}, {900.0f, 1200.0f}, ENEMY_FAST, 0.0f},
     {SPAWN_SINGLE, 5.0f, {1, 3}, {800.0f, 900.0f}, ENEMY_TANK, 10.0f},
     {SPAWN_SURROUND, 5.0f, {30, 55}, {2000.0f, 2000.0f}, ENEMY_BASIC, 0.0f},
-    {SPAWN_CLUSTER, 12.0f, {30, 45}, {800.0f, 1100.0f}, ENEMY_TANK, 10.0f},
+    {SPAWN_CLUSTER, 12.0f, {30, 45}, {800.0f, 1100.0f}, ENEMY_TANK, 28.0f},
 
     // High Difficulty Presets (30 - 100)
     {SPAWN_SURROUND, 20.0f, {80, 110}, {1800.0f, 1800.0f}, ENEMY_BASIC, 35.0f},
@@ -182,6 +182,12 @@ void EnemySystem_Update(float deltaTime, Vector2 playerPos,
     EnemySpawnPreset bossPreset = {
         SPAWN_SINGLE, 1.0f, {1, 1}, {800.0f, 900.0f}, ENEMY_MINI_BOSS, 0.0f};
     EnemySystem_TriggerPreset(playerPos, bossPreset, minutes);
+    playerState->bossWarningTimer = 5.0f; // 5 seconds of warning
+  }
+
+  // Update boss warning timer
+  if (playerState->bossWarningTimer > 0.0f) {
+    playerState->bossWarningTimer -= deltaTime;
   }
 
   // 4. Weighted Random Spawning Logic with Difficulty Filtering

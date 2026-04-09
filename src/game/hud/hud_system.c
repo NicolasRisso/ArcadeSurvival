@@ -92,17 +92,17 @@ void HUDSystem_Draw(PlayerState* state) {
         DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 - 50, fontSize, warnCol);
     }
     
-    // MINI BOSS WARNING
-    float bossCycle = fmodf(state->gameTime, 180.0f);
-    if (state->gameTime > 170.0f && bossCycle >= 175.0f && bossCycle < 180.0f) {
-        const char* warning = "MINI BOSS INCOMING";
+    // MINI BOSS WARNING (Timer Based)
+    if (state->bossWarningTimer > 0.0f) {
+        const char* warning = "MINI BOSS INCOMING!";
         int fontSize = 50;
         int tWidth = MeasureText(warning, fontSize);
         
+        // Pulsing effect
         float alpha = (sinf(state->gameTime * 12.0f) * 0.5f + 0.5f);
         Color warnCol = (Color){ 0, 255, 0, (unsigned char)(alpha * 255) }; // Green for Boss
         
-        DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 + 50, fontSize, warnCol);
+        DrawText(warning, (screenWidth - tWidth) / 2, screenHeight / 2 - 50, fontSize, warnCol);
     }
 }
 
@@ -172,7 +172,7 @@ static void DrawCard(Rectangle bounds, LevelUpOption option, bool isHovered) {
     DrawTextWrapped(desc, (Vector2){bounds.x + 10, bounds.y + 80}, bounds.width - 20, 18, DARKGRAY);
 }
 
-void HUDSystem_DrawLevelUp(PlayerState* state) {
+void HUDSystem_DrawLevelUp(PlayerState* state, bool bIsUsingGamepad) {
     if (!state || !state->bIsLevelingUp) return;
     
     int screenWidth = GetScreenWidth();
@@ -192,11 +192,18 @@ void HUDSystem_DrawLevelUp(PlayerState* state) {
     
     const char* title = "LEVEL UP! CHOOSE AN UPGRADE";
     DrawText(title, (screenWidth - MeasureText(title, 40)) / 2, startY - 80, 40, WHITE);
-
+ 
     for (int i = 0; i < state->levelUpOptionCount; i++) {
         Rectangle bounds = { (float)startX + i * (cardWidth + spacing), (float)startY, (float)cardWidth, (float)cardHeight };
-        bool isHovered = CheckCollisionPointRec(mousePos, bounds);
-        DrawCard(bounds, state->levelUpOptions[i], isHovered);
+        bool isHovered = !bIsUsingGamepad && CheckCollisionPointRec(mousePos, bounds);
+        bool isSelected = (state->uiSelectedIndex == i);
+        
+        DrawCard(bounds, state->levelUpOptions[i], isHovered || isSelected);
+        
+        // Highlight selection with extra border thickness if it's the active index
+        if (isSelected) {
+            DrawRectangleLinesEx(bounds, 6, GOLD);
+        }
         
         // Key hint
         char hint[4];

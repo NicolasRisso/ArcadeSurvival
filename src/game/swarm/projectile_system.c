@@ -81,10 +81,15 @@ void ProjectileSystem_Update(float deltaTime, PlayerState* state) {
 
                 if (enemy_healths[j] <= 0) {
                     int xpValue = 10;
-                    if (enemy_types[j] == ENEMY_FAST) xpValue = 25;
+                    if (enemy_types[j] == ENEMY_MINI_BOSS) xpValue = 30000;
+                    else if (enemy_types[j] == ENEMY_FAST) xpValue = 25;
                     else if (enemy_types[j] == ENEMY_TANK) xpValue = 100;
                     
-                    // Apply time scaling
+                    // Apply time scaling (Dual curve: 25%/30s + 50%/3m)
+                    float interval30s = (int)(state->gameTime / 30.0f) * 0.25f;
+                    float interval3m = (int)(state->gameTime / 180.0f) * 0.5f;
+                    float xpMultiplier = 1.0f + interval30s + interval3m;
+                    
                     xpValue = (int)(xpValue * xpMultiplier);
                     
                     PickupSystem_RollLoot(enemy_positions[j], xpValue);

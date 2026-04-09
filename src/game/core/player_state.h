@@ -50,6 +50,8 @@ typedef struct PlayerState {
     float gameTime;
     StatNotification statNotify;
     bool bShowInventoryOverlay;
+    int uiSelectedIndex; // Current selection for level-up UI
+    float bossWarningTimer;
 } PlayerState;
 
 void PlayerState_Init(PlayerState* state);
